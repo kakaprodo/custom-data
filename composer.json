@@ -1,0 +1,18 @@
+{
+    "name": "kakaprodo/custom-data",
+    "description": "A package that minimize mixed arguments of functions or methods",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Kakaprodo\\CustomData\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "kakaprodo",
+            "email": "promskakaprodo45@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
