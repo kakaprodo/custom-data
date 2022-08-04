@@ -1,8 +1,8 @@
 ## Custom Data
 
-A package that minimize mixed arguments of functions or class methods
+A package that chase the delcaration of many arguments to a functions or class methods
 
-Whenever i see a function with argument `$data` i'm like 🤮, because i have to activate my prophetic side to guess which king of data is provided. so i decided to make this package so that you can start defining your arguments like
+Whenever i see a function with argument `($data1, $data2...)` i'm like 🤮, because i have to activate my prophetic side to guess which king of data is being provided. so i decided to make this package so that you can start defining your arguments like
 
 ```php
 function handle(CreateUserData $data) {
@@ -91,6 +91,63 @@ class CreateUserAction
         // then do whatever you wanna do here
     }
 }
+
+```
+
+## Support of One class One Responsability( ==> Action😎)
+
+For people who like to split their business logic into small classes called `action`, here is your chocolate,
+
+```php
+//Before
+
+//defining action that use CustomData parameters
+
+class MyAction
+{
+    public static function handle(MyActionData $data) {
+
+    }
+}
+
+
+// call the action
+
+
+MyAction::handle(MyActionData::make([
+    'arg1' => value,
+    'arg2' => value,
+    'arg3' => value
+    ...
+]));
+
+```
+
+Can you imagine you have to call your `CustomData`(MyActionData) wherever you are using yoour actioon, that's too much🤮 🤮 🤮 🤮 . Now the good news is that, you can extends the `Kakaprodo\CustomData\Helpers\CustomActionBuilder` class to your action and then, it will do for you the injection magic of your customData using its `process` method. (What?😳, Noooo way😎!).
+
+```php
+//After
+
+//defining action that use CustomData parameters
+
+use Kakaprodo\CustomData\Helpers\CustomActionBuilder;
+
+class MyAction extends CustomActionBuilder
+{
+    public static function handle(MyActionData $data) {
+
+    }
+}
+
+
+// call the action without defining  MyActionData class
+
+MyAction::process([
+    'arg1' => value,
+    'arg2' => value,
+    'arg3' => value
+    ...
+]);
 
 ```
 
