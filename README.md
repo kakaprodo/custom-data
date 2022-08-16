@@ -80,6 +80,40 @@ Just add the expected properties in your `expectedProperties`, and add a suffix 
     }
 ```
 
+### Data type support
+
+This package allows you to define data type on your expected properties like bellow:
+
+```php
+    protected function expectedProperties(): array
+    {
+        return [
+            'name' => $this->dataType()->string()
+            'price' => $this->dataType()->numeric()
+            'user' => $this->dataType(\Customer\Path\User::class)
+        ];
+    }
+```
+
+You can also define a default value of an expected property
+
+```php
+    protected function expectedProperties(): array
+    {
+        return [
+            'price?' => $this->dataType()->numeric(100)
+            // Or
+            'name?' => $this->dataType()->string()->default('kakaprodo')
+        ];
+    }
+```
+
+Here is the list of the supported data type so far:
+
+-   string: `$this->dataType()->string()`
+-   numeric: `$this->dataType()->numeric()`
+-   bool : `$this->dataType()->bool()`
+
 ### Use your Data class inside an action
 
 ```php
@@ -94,7 +128,7 @@ class CreateUserAction
 
 ```
 
-## Support of One class One Responsability( ==> Action😎)
+## Support Customer Data Injection
 
 For people who like to split their business logic into small classes called `action`, here is your chocolate,
 

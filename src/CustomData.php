@@ -3,9 +3,11 @@
 namespace Kakaprodo\CustomData;
 
 use Exception;
+use Kakaprodo\CustomData\Lib\CustomDataBase;
+use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 
-abstract class CustomData
+abstract class CustomData extends CustomDataBase
 {
     use HasCustomDataHelper;
 
@@ -45,14 +47,6 @@ abstract class CustomData
     }
 
     /**
-     * Required  class properties 
-     * 
-     * Note: when defining property, use  the suffix `?` to 
-     * your property for defining it as optional
-     */
-    abstract protected function expectedProperties(): array;
-
-    /**
      * All data passed to the class
      */
     public function all(): array
@@ -65,20 +59,23 @@ abstract class CustomData
         return $this->data[$name] ?? null;
     }
 
-    /**
-     * Check if all required properties were provided
-     */
-    private function validateRequiredProperties()
+    public function __set($name, $value)
     {
+        return $this->data[str_replace('?', '', $name)] = $value;
+    }
 
-        foreach ($this->expectedProperties() as $property) {
+    /**
+     * get a given property with the ability to pass
+     * a default in case the property is not defined
+     */
+    public function get($property, $default = null)
+    {
+        $value = $this->{$property};
 
-            // if a property is optional
-            if ($this->strEndsWith($property, '?')) continue;
+        if ($value || !$default) return $value;
 
-            if ($this->{$property} == null) throw new Exception(
-                "The property {$property} is required on the class " . static::class
-            );
-        }
+        $this->{$property} = $default;
+
+        return $default;
     }
 }
