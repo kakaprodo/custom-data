@@ -4,13 +4,9 @@ namespace Kakaprodo\CustomData;
 
 use Exception;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
-use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
-use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 
 abstract class CustomData extends CustomDataBase
 {
-    use HasCustomDataHelper;
-
     protected array $data = [];
 
     public function __construct(array $data)

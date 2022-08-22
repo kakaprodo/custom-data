@@ -8,15 +8,33 @@ use Kakaprodo\CustomData\CustomData;
 
 abstract class CustomActionBuilder
 {
+
+    /**
+     * the method to call on the class that extends the customData 
+     * class
+     */
+    public static $handleMethod = 'handle';
+
+    /**
+     * Deefine a custom handler method where
+     * data will be passed to
+     */
+    public static function on($handleMethod)
+    {
+        static::$handleMethod = $handleMethod;
+
+        return new static;
+    }
+
     public static function process(
         array $data,
         ?callable $beforeDataBoot = null
     ) {
         $action = (new static());
 
-        if (!method_exists($action, 'handle')) {
+        if (!method_exists($action, static::$handleMethod)) {
             throw new Exception(
-                "Your action " . get_class($action) . " should have a handle method"
+                "Your action " . get_class($action) . " should have a handle method or define a cutom one by using ::on(myHandleMehtod)->process([])"
             );
         }
 
@@ -24,7 +42,7 @@ abstract class CustomActionBuilder
 
         $customData = $customDataClass::make(...func_get_args());
 
-        return $action->handle($customData, $beforeDataBoot);
+        return $action->{static::$handleMethod}($customData, $beforeDataBoot);
     }
 
     /**
@@ -36,7 +54,7 @@ abstract class CustomActionBuilder
     public static function getActionHandleDataClass(CustomActionBuilder $action)
     {
 
-        $actionHandleMethod = new ReflectionMethod($action, 'handle');
+        $actionHandleMethod = new ReflectionMethod($action, static::$handleMethod);
         $actionHandleParams = $actionHandleMethod->getParameters();
 
         if (!count($actionHandleParams)) {
