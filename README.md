@@ -128,7 +128,7 @@ class CreateUserAction
 
 ```
 
-## Support Customer Data Injection
+## Support Custom Data Injection
 
 For people who like to split their business logic into small classes called `action`, here is your chocolate,
 
@@ -183,6 +183,20 @@ MyAction::process([
     ...
 ]);
 
+```
+
+## Support Dynamic handler method on class that extends CustomActionBuilder
+
+You may need to extend the `CustomActionBuilder` on a class that has more than one method, yet you need to use CustomData
+injection feature.To achieve that you need to use the static method `on` before calling the `process` method like this:
+
+```php
+MyAction::on($myHandlerMethod)->process([
+    'arg1' => value,
+    'arg2' => value,
+    'arg3' => value
+    ...
+]);
 ```
 
 And that's all🤪😋, ==> Now go and build something beautiful, it's okay you can thanks me later, i understand that you are excited to install the package first😂

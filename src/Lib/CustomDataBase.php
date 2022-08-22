@@ -5,9 +5,11 @@ namespace Kakaprodo\CustomData\Lib;
 use Exception;
 use Kakaprodo\CustomData\Lib\Optional;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
+use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 
 abstract class CustomDataBase
 {
+    use HasCustomDataHelper;
     /**
      * Required  class properties 
      * 
@@ -45,7 +47,9 @@ abstract class CustomDataBase
             // if a property is optional
             if ($this->strEndsWith($propertyName, '?')) {
 
-                if ($shouldCheckDataType) $propertyValue->validate($propertyName);
+                if ($shouldCheckDataType && $this->optional($propertyValue)->default) {
+                    $propertyValue->validate($propertyName);
+                }
 
                 continue;
             }
