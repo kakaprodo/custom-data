@@ -26,23 +26,43 @@ abstract class CustomActionBuilder
         return new static;
     }
 
+    /**
+     * Detect the appropriate CustomData for a given class
+     * 
+     * @var array|CustomData
+     * @var Closure $beforeDataBoot : action to execute before the boot method
+     */
     public static function process(
-        array $data,
+        $data,
         ?callable $beforeDataBoot = null
     ) {
         $action = (new static());
 
         if (!method_exists($action, static::$handleMethod)) {
             throw new Exception(
-                "Your action " . get_class($action) . " should have a handle method or define a cutom one by using ::on(myHandleMehtod)->process([])"
+                "Your action " . get_class($action) . " should have a handle method or"
+                    . " define a cutom one by using ::on(myHandleMehtod)->process([])"
             );
         }
 
+        $customData = $action->dataToInject($action, $data, $beforeDataBoot);
+
+        return $action->{static::$handleMethod}($customData);
+    }
+
+    /**
+     * Detect the data to be injected into the action's handler method
+     */
+    protected function dataToInject(
+        CustomActionBuilder $action,
+        $data,
+        callable $beforeDataBoot = null
+    ) {
+        if ($data instanceof CustomData) return $data;
+
         $customDataClass = self::getActionHandleDataClass($action);
 
-        $customData = $customDataClass::make(...func_get_args());
-
-        return $action->{static::$handleMethod}($customData, $beforeDataBoot);
+        return $customDataClass::make($data, $beforeDataBoot);
     }
 
     /**
