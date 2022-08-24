@@ -1,6 +1,6 @@
 <?php
 
-namespace Kakaprodo\CustomData\Lib;
+namespace Kakaprodo\CustomData\Helpers;
 
 
 class Optional

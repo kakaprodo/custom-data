@@ -3,7 +3,7 @@
 namespace Kakaprodo\CustomData\Lib;
 
 use Exception;
-use Kakaprodo\CustomData\Lib\Optional;
+use Kakaprodo\CustomData\Helpers\Optional;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 
@@ -59,7 +59,7 @@ abstract class CustomDataBase
                 $shouldCheckDataType ? $propertyValue->default : null
             );
 
-            if ($valueForRequiredValidation == null) throw new Exception(
+            if ($valueForRequiredValidation === null) throw new Exception(
                 "The property {$propertyName} is required on the class " . static::class
             );
 
