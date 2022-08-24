@@ -185,6 +185,17 @@ MyAction::process([
 
 ```
 
+The `process` method can support also an existing CustomData object like:
+
+```php
+    $data = CreateUserData::make([
+        'email' => 'email@gmail.com',
+        'user' => new User()
+    ]);
+
+    MyAction::process($data);
+```
+
 ## Support Dynamic handler method on class that extends CustomActionBuilder
 
 You may need to extend the `CustomActionBuilder` on a class that has more than one method, yet you need to use CustomData
