@@ -89,10 +89,11 @@ class DataTypeHub
         $propertyValue = $this->customData->get($propertyName, $this->default);
 
         $isCustomType = $this->isCustomType();
+        $selectedType = $this->selectedType;
 
         $typeMatches = !$isCustomType ?
             $this->checkBuiltInDataType($propertyValue)
-            : ($propertyValue instanceof ($this->selectedType));
+            : ($propertyValue instanceof $selectedType);
 
         if (!$typeMatches) throw new Exception(
             "Property {$propertyName}: Expected {$this->selectedType} but " .
