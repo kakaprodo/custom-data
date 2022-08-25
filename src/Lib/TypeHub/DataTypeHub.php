@@ -91,12 +91,19 @@ class DataTypeHub
         $isCustomType = $this->isCustomType();
 
         $typeMatches = !$isCustomType ?
-            "is_{$this->selectedType}"($propertyValue)
+            $this->checkBuiltInDataType($propertyValue)
             : ($propertyValue instanceof ($this->selectedType));
 
         if (!$typeMatches) throw new Exception(
             "Property {$propertyName}: Expected {$this->selectedType} but " .
                 gettype($propertyValue) . " given"
         );
+    }
+
+    private function checkBuiltInDataType($propertyValue)
+    {
+        $builtInType = "is_" . $this->selectedType; //eg: is_bool
+
+        return $builtInType($propertyValue);
     }
 }
