@@ -11,8 +11,28 @@ class DataTypeHub
     const DATA_NUMERIC = 'numeric';
     const DATA_BOOL = 'bool';
     const DATA_STRING = 'string';
+    const DATA_ARRAY = 'array';
 
+    static $supportedbuiltInTypes = [
+        'string',
+        'integer',
+        'float',
+        'bool',
+        'array',
+        'object',
+        'numeric'
+    ];
+
+    /**
+     * The definedd type of the property 
+     */
     protected $selectedType = null;
+
+    /**
+     * The type to check iin case the provided property type
+     * fails
+     */
+    protected $additionalType = null;
 
     /**
      * @var CustomDataBase
@@ -48,6 +68,16 @@ class DataTypeHub
     }
 
     /**
+     * define that a property is an array
+     */
+    public function array($default = null)
+    {
+        $this->selectedType = self::DATA_ARRAY;
+
+        return $this->default($default);
+    }
+
+    /**
      * define that a property is a string
      */
     public function string($default = null)
@@ -55,6 +85,17 @@ class DataTypeHub
         $this->selectedType = self::DATA_STRING;
 
         return $this->default($default);
+    }
+
+    /**
+     * Define your proper way to check the property type,
+     * and handle exception on error
+     */
+    public function customValidator(callable $logic)
+    {
+        $this->selectedType = $logic;
+
+        return $this;
     }
 
     /**
@@ -68,13 +109,24 @@ class DataTypeHub
     }
 
     /**
+     * A additional type to check in case the first type failed
+     */
+    public function orUseType($type)
+    {
+        $this->additionalType = $type;
+
+        return $this;
+    }
+
+    /**
      * check if a selected type is a custoomer data Type
      */
-    private function isCustomType()
+    private function isCustomType($selectedType = null)
     {
-        $builtInTypes = (new ReflectionClass($this))->getConstants();
-
-        return !in_array($this->selectedType, $builtInTypes);
+        return !in_array(
+            $selectedType ?? $this->selectedType,
+            static::$supportedbuiltInTypes
+        );
     }
 
     /**
@@ -87,13 +139,11 @@ class DataTypeHub
         );
 
         $propertyValue = $this->customData->get($propertyName, $this->default);
-
-        $isCustomType = $this->isCustomType();
         $selectedType = $this->selectedType;
 
-        $typeMatches = !$isCustomType ?
-            $this->checkBuiltInDataType($propertyValue)
-            : ($propertyValue instanceof $selectedType);
+        if (is_callable($selectedType)) return $selectedType($propertyValue);
+
+        $typeMatches = $this->checkTypeMatches($propertyValue, $selectedType);
 
         if (!$typeMatches) throw new Exception(
             "Property {$propertyName}: Expected {$this->selectedType} but " .
@@ -101,9 +151,33 @@ class DataTypeHub
         );
     }
 
-    private function checkBuiltInDataType($propertyValue)
+    /**
+     * Check if the type of a given property matches with 
+     * the expected one
+     */
+    protected function checkTypeMatches(
+        $propertyValue,
+        $selectedType,
+        $checkedExtraType = false
+    ) {
+        if ($selectedType == null) return false;
+
+        $isCustomType = $this->isCustomType($selectedType);
+
+        $typeMatches = !$isCustomType ?
+            $this->checkBuiltInDataType($propertyValue, $selectedType)
+            : ($propertyValue instanceof $selectedType);
+
+        return $typeMatches
+            ? $typeMatches
+            : (($checkedExtraType)
+                ?  $typeMatches
+                :  $this->checkTypeMatches($propertyValue, $this->additionalType, true));
+    }
+
+    private function checkBuiltInDataType($propertyValue, $selectedType)
     {
-        $builtInType = "is_" . $this->selectedType; //eg: is_bool
+        $builtInType = "is_" . $selectedType; //eg: is_bool
 
         return $builtInType($propertyValue);
     }
