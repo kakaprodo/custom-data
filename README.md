@@ -210,4 +210,98 @@ MyAction::on($myHandlerMethod)->process([
 ]);
 ```
 
+## Support Multiple Data Type On property
+
+Some times you may want to check multiple types on a given property, like let's say you want to check if a property is boolean(`true`) or numeric(`1`), this how you can do that
+
+```php
+    protected function expectedProperties(): array
+    {
+        return [
+            'active' => $this->dataType()->bool()->orUseType('numeric')
+        ];
+    }
+```
+
+Here is the list of additional types you can use : `string`,`integer`,`float`,`bool`,`array`, `object`,`numeric`
+
+## Support Custom Validation on Property
+
+Some times you may wnat to define your logiic on how to validate a property, you achieve that by doing this way
+
+```php
+    protected function expectedProperties(): array
+    {
+        return [
+           'age'  => $this->dataType(function ($value) {
+               if (!is_numeric($value)) throw \Exception('how can you provide a such value🤪');
+            })
+        ];
+    }
+
+    // OR
+
+    protected function expectedProperties(): array
+    {
+        return [
+           'age'  => $this->dataType()->customValidator(function ($value) {
+                if (!is_numeric($value)) throw \Exception('how can you provide a such value🤪');
+            })
+        ];
+    }
+
+```
+
+The `$value` is the value of the given property, which is `age` in the above case
+
+## Custom Data unique Key
+
+In case you may want to generate a unique key for your custom data, you can use the `@dataKey`
+
+```php
+ $data = CreateUserData::make([
+        'email' => 'email@gmail.com',
+        'user' => 1
+    ]);
+ $data->dataKey(); // result: email=email@gmail.com@user=1
+```
+
+The key is generated based on the provided customData properties, so Inside the customData class, you can be able to
+ignore the fields you don't want to appear in the generated key
+
+```php
+class CreateUserData extends CustomData
+{
+    protected function expectedProperties(): array
+    {
+        return [
+            'email',
+            'user'
+        ];
+    }
+
+    protected function ignoreForKeyGenerator(): array
+    {
+        return ['user'];
+    }
+}
+```
+
+😘Personaly, i use this method in case i want to cache a request response found based on given customdata values
+
+## Check property existance
+
+Sometimes you may want to check if a given property was provided on the customData class, otherwise you throw an exception
+
+```php
+
+$data = CreateUserData::make([
+        'email' => 'email@gmail.com',
+        'user' => 1
+    ]);
+
+// here you can check if another field was set
+$data->throwWhenFieldAbsent('other_option', 'your error message');
+```
+
 And that's all🤪😋, ==> Now go and build something beautiful, it's okay you can thanks me later, i understand that you are excited to install the package first😂

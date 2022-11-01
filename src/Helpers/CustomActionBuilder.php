@@ -5,6 +5,9 @@ namespace Kakaprodo\CustomData\Helpers;
 use Exception;
 use ReflectionMethod;
 use Kakaprodo\CustomData\CustomData;
+use Kakaprodo\CustomData\Exceptions\ActionWithNoArgumentException;
+use Kakaprodo\CustomData\Exceptions\ActionHandleMethodNotFoundException;
+use Kakaprodo\CustomData\Exceptions\ActionWithNonCustomDataArgumentException;
 
 abstract class CustomActionBuilder
 {
@@ -39,9 +42,9 @@ abstract class CustomActionBuilder
         $action = (new static());
 
         if (!method_exists($action, static::$handleMethod)) {
-            throw new Exception(
+            throw new ActionHandleMethodNotFoundException(
                 "Your action " . get_class($action) . " should have a handle method or"
-                    . " define a cutom one by using ::on(myHandleMehtod)->process([])"
+                    . " define a custom one by using ::on(myHandleMehtod)->process([])"
             );
         }
 
@@ -78,7 +81,7 @@ abstract class CustomActionBuilder
         $actionHandleParams = $actionHandleMethod->getParameters();
 
         if (!count($actionHandleParams)) {
-            throw new Exception(
+            throw new ActionWithNoArgumentException(
                 "Your action " . get_class($action) . "::handle is supposed to have an arguments"
             );
         }
@@ -87,13 +90,13 @@ abstract class CustomActionBuilder
         $customDataReflection = ($actionHandleParams[0])->getType();
 
         if (!$customDataReflection) {
-            throw new Exception(
+            throw new ActionWithNonCustomDataArgumentException(
                 "Your action " . get_class($action) . "::handle's argument \${$argumentName} is missing a customData type"
             );
         }
 
         if ($customDataReflection->isBuiltIn()) {
-            throw new Exception(
+            throw new ActionWithNonCustomDataArgumentException(
                 "Your action " . get_class($action) . "::handle's argument \${$argumentName} should use a custom data type"
             );
         }
@@ -101,7 +104,7 @@ abstract class CustomActionBuilder
         $customDataClass = $customDataReflection->getName();
 
         if (!(new $customDataClass([]) instanceof CustomData)) {
-            throw new Exception(
+            throw new ActionWithNonCustomDataArgumentException(
                 "The class {$customDataClass} should extend " . CustomData::class
             );
         }
