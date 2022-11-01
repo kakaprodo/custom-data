@@ -5,6 +5,7 @@ namespace Kakaprodo\CustomData\Lib\TypeHub;
 use Exception;
 use ReflectionClass;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
+use Kakaprodo\CustomData\Exceptions\UnexpectedPropertyTypeException;
 
 class DataTypeHub
 {
@@ -145,7 +146,7 @@ class DataTypeHub
 
         $typeMatches = $this->checkTypeMatches($propertyValue, $selectedType);
 
-        if (!$typeMatches) throw new Exception(
+        if (!$typeMatches) throw new UnexpectedPropertyTypeException(
             "Property {$propertyName}: Expected {$this->selectedType} but " .
                 gettype($propertyValue) . " given"
         );

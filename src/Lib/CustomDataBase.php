@@ -6,6 +6,7 @@ use Exception;
 use Kakaprodo\CustomData\Helpers\Optional;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
+use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 
 abstract class CustomDataBase
 {
@@ -47,7 +48,7 @@ abstract class CustomDataBase
             // if a property is optional
             if ($this->strEndsWith($propertyName, '?')) {
 
-                if ($shouldCheckDataType && $this->optional($propertyValue)->default) {
+                if ($shouldCheckDataType && isset($this->optional($propertyValue)->default)) {
                     $propertyValue->validate($propertyName);
                 }
 
@@ -59,12 +60,21 @@ abstract class CustomDataBase
                 $shouldCheckDataType ? $propertyValue->default : null
             );
 
-            if ($valueForRequiredValidation === null) throw new Exception(
+            if ($valueForRequiredValidation === null) throw new MissedRequiredPropertyException(
                 "The property {$propertyName} is required on the class " . static::class
             );
 
             // validate the property type
             if ($shouldCheckDataType) $propertyValue->validate($propertyName);
         }
+    }
+
+    /**
+     * Properties to ignore when generating the
+     * the data unique key
+     */
+    protected function ignoreForKeyGenerator(): array
+    {
+        return [];
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Kakaprodo\CustomData;
 
-use Exception;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
 
 abstract class CustomData extends CustomDataBase
@@ -68,7 +67,7 @@ abstract class CustomData extends CustomDataBase
     {
         $value = $this->{$property};
 
-        if ($value || !$default) return $value;
+        if (isset($value) || $default === null) return $value;
 
         $this->{$property} = $default;
 
