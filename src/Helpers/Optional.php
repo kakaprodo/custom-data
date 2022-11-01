@@ -14,7 +14,7 @@ class Optional
 
     public function __call($name, $arguments)
     {
-        if (!$this->object && !is_object($this->object)) return null;
+        if (!$this->object || !is_object($this->object)) return null;
 
         return method_exists($this->object, $name) ?
             $this->object->{$name}($arguments)
@@ -23,8 +23,10 @@ class Optional
 
     public function __get($name)
     {
-        if (!$this->object && !is_object($this->object)) return null;
+        if (!$this->object || !is_object($this->object)) return null;
 
-        return  $this->object->{$name} ?? null;
+        $value = $this->object->$name;
+
+        return  isset($value) ? $value : null;
     }
 }
