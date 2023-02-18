@@ -4,6 +4,7 @@ namespace Kakaprodo\CustomData\Traits;
 
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Kakaprodo\CustomData\Exceptions\UnCallableValueException;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 
 trait HasCustomDataHelper
@@ -94,5 +95,18 @@ trait HasCustomDataHelper
         if (is_bool($value)) return (int) $value;
 
         return (string) $value;
+    }
+
+    /**
+     * only call a function if it is callbale otherwise return error 
+     * or return the same passed value
+     */
+    function callFunction($myFunction, $throwableMsg = null, ...$args)
+    {
+        if (is_callable($myFunction)) return $myFunction(...$args);
+
+        if ($throwableMsg) throw new UnCallableValueException($throwableMsg);
+
+        return $myFunction;
     }
 }
