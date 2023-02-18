@@ -40,25 +40,28 @@ abstract class CustomDataBase
 
         foreach ($this->expectedProperties() as $propertyName => $propertyValue) {
 
-            // in case data type checking is not supported
-            $propertyName = is_numeric($propertyName) ? $propertyValue : $propertyName;
+            // get the property the way it is with a ? at the end
+            $unSinitizePropertyName = is_numeric($propertyName) ? $propertyValue : $propertyName;
+
+            // remove the ? symbol from the name
+            $propertyName = $this->replaceLast('?', '', $unSinitizePropertyName);
 
             $shouldCheckDataType = ($propertyValue instanceof DataTypeHub);
-
-            // if a property is optional
-            if ($this->strEndsWith($propertyName, '?')) {
-
-                if ($shouldCheckDataType && isset($this->optional($propertyValue)->default)) {
-                    $propertyValue->validate($propertyName);
-                }
-
-                continue;
-            }
 
             $valueForRequiredValidation = $this->get(
                 $propertyName,
                 $shouldCheckDataType ? $propertyValue->default : null
             );
+
+            // if a property is optional
+            if ($this->strEndsWith($unSinitizePropertyName, '?')) {
+
+                if ($shouldCheckDataType && $valueForRequiredValidation) {
+                    $propertyValue->validate($propertyName);
+                }
+
+                continue;
+            }
 
             if ($valueForRequiredValidation === null) throw new MissedRequiredPropertyException(
                 "The property {$propertyName} is required on the class " . static::class

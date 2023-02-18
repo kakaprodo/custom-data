@@ -26,6 +26,29 @@ trait HasCustomDataHelper
     }
 
     /**
+     * Replace the last occurrence of a given value in the string.
+     *
+     * @param  string  $search
+     * @param  string  $replace
+     * @param  string  $subject
+     * @return string
+     */
+    public static function replaceLast($search, $replace, $subject)
+    {
+        if ($search === '') {
+            return $subject;
+        }
+
+        $position = strrpos($subject, $search);
+
+        if ($position !== false) {
+            return substr_replace($subject, $replace, $position, strlen($search));
+        }
+
+        return $subject;
+    }
+
+    /**
      * Throw exception when a field does not exist on customdata
      */
     public function throwWhenFieldAbsent($fieldName, $msg = null)
