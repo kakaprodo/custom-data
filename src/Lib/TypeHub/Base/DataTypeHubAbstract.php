@@ -145,11 +145,11 @@ abstract class DataTypeHubAbstract
     }
 
     /**
-     * set the expected class for each item of an array
+     * set the expected type for each item of an array
      */
-    public function isArrayOf($class)
+    public function isArrayOf($type)
     {
-        $this->childTypeShouldBe = $class;
+        $this->childTypeShouldBe = $type;
 
         return $this;
     }
