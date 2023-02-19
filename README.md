@@ -1,8 +1,8 @@
 ## Custom Data
 
-A package that chase the delcaration of many arguments to a functions or class methods
+A package that chase the declaration of many arguments to a functions or class methods
 
-Whenever i see a function with argument `($data1, $data2...)` i'm like 🤮, because i have to activate my prophetic side to guess which king of data is being provided. so i decided to make this package so that you can start defining your arguments like
+Whenever i see a function with argument `($data1, $data2...)` i'm like 🤮, because i have to activate my prophetic side to guess which king of data is being provided. so i decided to make this package so that you can start defining your arguments in one varibale like
 
 ```php
 function handle(CreateUserData $data) {
@@ -302,6 +302,80 @@ $data = CreateUserData::make([
 
 // here you can check if another field was set
 $data->throwWhenFieldAbsent('other_option', 'your error message');
+```
+
+## Support data casting before validation
+
+Sometimes you may need to force a property validation to pass the validation criteria by casting its value to meet the expected data type. this package provide a method `castForValidation` that accepts a callback function. To demonstrate this
+method we are going to take a case in which user is active only when he has created a pin
+
+```php
+
+// define your validation
+class UpdateUserData extends CustomData
+{
+    protected function expectedProperties(): array
+    {
+        return [
+            'active' => $this->dataType()->bool()->castForValidation(function($propertyValue) {
+                return (bool) $propertyValue;
+            })
+        ];
+    }
+}
+
+// Then call the data class,
+//  $pin = 12345677;
+$data = UpdateUserData::make([
+        'active' => $pin
+    ]);
+
+```
+
+## Support the validation of each item of an array
+
+Sometimes you may force an array propety to have items of a specific type. to achieve that, the package is providing
+a method `isArrayOf` that can help you.
+
+```php
+
+// child data
+class TagData extends CustomData
+{
+    protected function expectedProperties(): array
+    {
+        return [
+            'name' => $this->dataType()->string()
+        ];
+    }
+}
+
+class CreatePostData extends CustomData
+{
+    protected function expectedProperties(): array
+    {
+        return [
+            // define which item type the property is expecting
+            'tags' => $this->dataType()->array()->isArrayOf(TagData::class)
+        ];
+    }
+}
+```
+
+The method `isArrayOf` supports also `string`,`integer`,`float`,`bool`,`numeric` data type, But you may also define your own data type of the array items by using a callback function that accept the value of the item in the array
+
+```php
+class CreatePostData extends CustomData
+{
+    protected function expectedProperties(): array
+    {
+        return [
+            'tags' => $this->dataType()->array()->isArrayOf(function($tag) {
+                return $tag  instanceof Class;
+            })
+        ];
+    }
+}
 ```
 
 And that's all🤪😋, ==> Now go and build something beautiful, it's okay you can thanks me later, i understand that you are excited to install the package first😂
