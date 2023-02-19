@@ -45,7 +45,7 @@ class DataTypeHub extends DataTypeHubAbstract
 
         $typeMatches = $this->isCustomType($selectedType) ?
             ($propertyValue instanceof $selectedType)
-            : $this->typeOfValueIs($selectedType, $propertyValue);
+            : $this->typeOfValueIs($selectedType, $propertyValue, $this->childTypeShouldBe);
 
         return $typeMatches
             ? $typeMatches

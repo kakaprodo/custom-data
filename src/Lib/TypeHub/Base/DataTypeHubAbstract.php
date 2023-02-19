@@ -2,25 +2,31 @@
 
 namespace Kakaprodo\CustomData\Lib\TypeHub\Base;
 
+use Exception;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
 use Kakaprodo\CustomData\Exceptions\UnExpectedArrayItemType;
 
 
 abstract class DataTypeHubAbstract
 {
-    const DATA_NUMERIC = 'numeric';
-    const DATA_BOOL = 'bool';
+
     const DATA_STRING = 'string';
+    const DATA_INT = 'integer';
+    const DATA_FLOAT = 'float';
+    const DATA_BOOL = 'bool';
     const DATA_ARRAY = 'array';
+    const DATA_OBJECT = 'object';
+    const DATA_NUMERIC = 'numeric';
+    const DATA_CUSTOM = 'custom';
 
     static $supportedbuiltInTypes = [
-        'string',
-        'integer',
-        'float',
-        'bool',
-        'array',
-        'object',
-        'numeric'
+        self::DATA_STRING,
+        self::DATA_INT,
+        self::DATA_FLOAT,
+        self::DATA_BOOL,
+        self::DATA_ARRAY,
+        self::DATA_OBJECT,
+        self::DATA_NUMERIC
     ];
 
     /**
@@ -28,6 +34,9 @@ abstract class DataTypeHubAbstract
      */
     protected $selectedType = null;
 
+    /**
+     * the name of the property we are validating
+     */
     protected $propertyName = null;
 
     /**
@@ -138,7 +147,7 @@ abstract class DataTypeHubAbstract
     /**
      * set the expected class for each item of an array
      */
-    public function itemsShouldBeOfType($class)
+    public function isArrayOf($class)
     {
         $this->childTypeShouldBe = $class;
 
@@ -149,18 +158,23 @@ abstract class DataTypeHubAbstract
      * check if the child of a given array are the instance of the
      * given class
      */
-    public function arrayItemsAreCompatible($items)
+    public function arrayItemsAreCompatible($items, $childType = null)
     {
-        $class = $this->childTypeShouldBe;
+        if (!$childType) return true;
 
-        if (!$class) return true;
+        if ($childType == self::DATA_ARRAY) throw new Exception(
+            "child type of {$this->propertyName} is not supported"
+        );
 
-        foreach ($items as $item) {
+        foreach ($items as $key => $item) {
 
-            if (is_a($item, $class)) continue;
+            $type = $this->isCustomType($childType) ? self::DATA_CUSTOM : $childType;
+
+            if ($this->typeOfValueIs($type, $item, $childType)) continue;
 
             throw new UnExpectedArrayItemType(
-                "Each child element of {$this->propertyName} should be an instance of: " . $class
+                "The item {$this->propertyName}[{$key}] should be of type: " . $childType
+                    . " but " . gettype($item) . " given"
             );
         }
 
@@ -202,16 +216,28 @@ abstract class DataTypeHubAbstract
     /**
      * check the type of a given value
      */
-    public function typeOfValueIs($type, $value)
+    public function typeOfValueIs($type, $value, $customType = null)
     {
         $typeChecker = [
-            'string' => fn () => is_string($value) || is_numeric($value),
-            'integer' => fn () => is_integer($value),
-            'float' => fn () => is_float($value),
-            'bool' => fn () => is_bool($value) || in_array($value, [0, 1]),
-            'array' => fn () => is_array($value) && $this->arrayItemsAreCompatible($value),
-            'object' => fn () => is_object($value),
-            'numeric' => fn () => is_numeric($value),
+            self::DATA_STRING => fn () => is_string($value) || is_numeric($value),
+            self::DATA_INT => fn () => is_integer($value),
+            self::DATA_FLOAT => fn () => is_float($value),
+            self::DATA_BOOL => fn () => is_bool($value) || in_array($value, [0, 1]),
+            self::DATA_ARRAY => fn () => is_array($value) && $this->arrayItemsAreCompatible($value, $customType),
+            self::DATA_OBJECT => fn () => is_object($value),
+            self::DATA_NUMERIC => fn () => is_numeric($value),
+            self::DATA_CUSTOM => function () use ($value, $customType) {
+
+                if (is_callable($customType)) {
+                    $result = $customType($value);
+                    return  $result ?  $result : (throw new Exception(
+                        "Validation failed on {$this->propertyName} property"
+                    )
+                    );
+                }
+
+                return is_a($value, $customType);
+            }
         ][$type] ?? null;
 
         return $this->customData->callFunction($typeChecker, 'Unsupported property type :' . $type);

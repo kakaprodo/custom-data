@@ -73,4 +73,9 @@ abstract class CustomData extends CustomDataBase
 
         return $default;
     }
+
+    public function __toString()
+    {
+        return $this->dataKey();
+    }
 }
