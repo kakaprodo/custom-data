@@ -230,9 +230,10 @@ abstract class DataTypeHubAbstract
 
                 if (is_callable($customType)) {
                     $result = $customType($value);
-                    return  $result ?  $result : (throw new Exception(
+                    if ($result) return $result;
+
+                    throw new Exception(
                         "Validation failed on {$this->propertyName} property"
-                    )
                     );
                 }
 
