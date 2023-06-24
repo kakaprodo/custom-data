@@ -151,7 +151,24 @@ abstract class DataTypeHubAbstract
     {
         $this->childTypeShouldBe = $type;
 
+        $this->selectedType = self::DATA_ARRAY;
+
         return $this;
+    }
+
+    /**
+     * the value is one of the given item in array
+     */
+    public function inArray(array $items)
+    {
+        return $this->customValidator(function ($value) use ($items) {
+            if (in_array($value, $items)) return true;
+
+            $errorMsg = "{$this->propertyName} should be one of: " . implode(',', $items);
+            $errorMsg .= " but {$value} given";
+
+            throw new UnExpectedArrayItemType($errorMsg);
+        });
     }
 
     /**
