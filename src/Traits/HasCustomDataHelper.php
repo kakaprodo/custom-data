@@ -73,6 +73,8 @@ trait HasCustomDataHelper
         foreach ($this->expectedProperties() as $key => $value) {
             $property = str_replace('?', '', is_numeric($key) ? $value : $key);
 
+            if (in_array($property, $this->ignoreForKeyGenerator())) continue;
+
             try {
                 $propertValue = $this->serializeValueForKey(
                     $this->get($property, $this->optional($value)->default)
@@ -81,12 +83,10 @@ trait HasCustomDataHelper
                 throw new Exception("was not able to use {$property} for the dataKey");
             }
 
-            if (in_array($property, $this->ignoreForKeyGenerator())) continue;
-
-            $keyString[] = $property . '__eqto__' . $propertValue;
+            $keyString[] = $property . '__eq__' . $propertValue;
         }
 
-        return implode('-join-', $keyString);
+        return implode('-cd-', $keyString);
     }
 
     /**
@@ -96,7 +96,7 @@ trait HasCustomDataHelper
     {
         if ($value instanceof Model) return $value->id;
 
-        if (is_array($value)) return implode('-n-', $value);
+        if (is_array($value)) return '_array_' . count($value);
 
         if (is_bool($value)) return (int) $value;
 
