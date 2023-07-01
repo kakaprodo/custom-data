@@ -1,0 +1,28 @@
+<?php
+
+namespace {name_space};
+
+use Kakaprodo\CustomData\Helpers\CustomActionBuilder;
+use {data_class_name_space};
+
+class {class_name} extends CustomActionBuilder
+{
+    /**
+     * Define whether this action will run in the background
+     */
+    // public $shouldQueue = true;
+
+    /**
+     * Define the queue name of the action
+     */
+     // public $onQueue = 'queue-name';
+
+ 
+    /**
+     * The method that is going to process the logic
+     */
+    public function handle({data_class_name} $data)
+    {
+        // do your logic here
+    }
+}
