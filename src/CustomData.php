@@ -76,6 +76,11 @@ abstract class CustomData extends CustomDataBase
 
     public function __toString()
     {
-        return $this->dataKey();
+        return json_encode($this->all());
+    }
+
+    public function __toArray()
+    {
+        return $this->all();
     }
 }

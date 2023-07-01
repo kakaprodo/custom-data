@@ -80,7 +80,7 @@ trait HasCustomDataHelper
                     $this->get($property, $this->optional($value)->default)
                 );
             } catch (\Throwable $th) {
-                throw new Exception("was not able to use {$property} for the dataKey");
+                throw new Exception("was not able to use {$property} for the dataKey generator, please add the property {$property} among the ignoreForKeyGenerator");
             }
 
             $keyString[] = $property . '__eq__' . $propertValue;
@@ -96,13 +96,34 @@ trait HasCustomDataHelper
     {
         if ($value instanceof Model) return $value->id;
 
-        if (is_array($value)) return '_array_' . count($value);
+        if (is_array($value)) return '_array_' . $this->arrayToKey($value);
 
         if (is_bool($value)) return (int) $value;
 
         if ($value instanceof CustomData) return $value->dataKey();
 
         return (string) $value;
+    }
+
+    private function arrayToKey($myArray = [])
+    {
+        $keyStr = [];
+
+        foreach ($myArray as $key => $value) {
+            if (is_array($value)) {
+                $keyStr[] = $this->arrayToKey($value);
+                continue;
+            }
+
+            if ($value instanceof CustomData) {
+                $keyStr[] = $value->dataKey();
+                continue;
+            }
+
+            $keyStr[] = $key . '-aj-' . $value;
+        }
+
+        return implode('-av-', $keyStr);
     }
 
     /**
