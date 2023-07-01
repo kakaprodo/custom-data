@@ -8,6 +8,7 @@ use Kakaprodo\CustomData\CustomData;
 use Kakaprodo\CustomData\Exceptions\ActionWithNoArgumentException;
 use Kakaprodo\CustomData\Exceptions\ActionHandleMethodNotFoundException;
 use Kakaprodo\CustomData\Exceptions\ActionWithNonCustomDataArgumentException;
+use Kakaprodo\CustomData\Jobs\QueueCustomDataActionJob;
 
 abstract class CustomActionBuilder
 {
@@ -17,6 +18,25 @@ abstract class CustomActionBuilder
      * class
      */
     public static $handleMethod = 'handle';
+
+    /**
+     * the queue name on which the action will be dispatched
+     * , if null the default queue will be used
+     */
+    public $onQueue = null;
+
+    /**
+     * define whether the action should run in the background
+     * after data validation
+     */
+    public $shouldQueue = false;
+
+    /**
+     * instance of the action that is being processed
+     * 
+     * @var CustomActionBuilder
+     */
+    static $existingActionInstance = null;
 
     /**
      * Deefine a custom handler method where
@@ -30,6 +50,30 @@ abstract class CustomActionBuilder
     }
 
     /**
+     * define that the action should be processed in the background
+     * after data validation
+     */
+    public static function queue($queueName = null)
+    {
+        $action = (new static());
+
+        static::$existingActionInstance = $action;
+
+        static::$existingActionInstance->shouldQueue($queueName);
+
+        return new static;
+    }
+
+    /**
+     * set the ability to queue the action on a given name
+     */
+    protected function shouldQueue($queueName = null)
+    {
+        $this->shouldQueue = true;
+        $this->onQueue = $queueName;
+    }
+
+    /**
      * Detect the appropriate CustomData for a given class
      * 
      * @var array|CustomData
@@ -39,16 +83,13 @@ abstract class CustomActionBuilder
         $data,
         ?callable $beforeDataBoot = null
     ) {
-        $action = (new static());
-
-        if (!method_exists($action, static::$handleMethod)) {
-            throw new ActionHandleMethodNotFoundException(
-                "Your action " . get_class($action) . " should have a handle method or"
-                    . " define a custom one by using ::on(myHandleMehtod)->process([])"
-            );
-        }
+        $action = static::$existingActionInstance ?? (new static());
 
         $customData = $action->dataToInject($action, $data, $beforeDataBoot);
+
+        if ($action->shouldQueue) {
+            return QueueCustomDataActionJob::dispatch($action, $customData, static::$handleMethod);
+        }
 
         return $action->{static::$handleMethod}($customData);
     }
@@ -76,6 +117,13 @@ abstract class CustomActionBuilder
      */
     public static function getActionHandleDataClass(CustomActionBuilder $action)
     {
+
+        if (!method_exists($action, static::$handleMethod)) {
+            throw new ActionHandleMethodNotFoundException(
+                "Your action " . get_class($action) . " should have a handle method or"
+                    . " define a custom one by using ::on(myHandleMehtod)->process([])"
+            );
+        }
 
         $actionHandleMethod = new ReflectionMethod($action, static::$handleMethod);
         $actionHandleParams = $actionHandleMethod->getParameters();

@@ -1,6 +1,6 @@
 ## Custom Data
 
-A package that chase the declaration of many arguments to a functions or class methods
+A package that chases the declaration of many arguments to a functions or class methods
 
 Whenever i see a function with argument `($data1, $data2...)` i'm like 🤮, because i have to activate my prophetic side to guess which king of data is being provided. so i decided to make this package so that you can start defining your arguments in one varibale like
 
@@ -10,7 +10,12 @@ function handle(CreateUserData $data) {
 }
 ```
 
-And if you like to decouple your code with small classes called `Action` , then this can work good for you, especially when you are writing your automated tests
+And if you like to decouple your code with small classes called `Action` , then this can work good for you, especially when you are writing your automated tests or if you want to process your actions in background(using queue)
+
+## Prerequisite
+
+-   php >= 7
+-   laravel >= 7
 
 ## Installation
 
@@ -113,6 +118,9 @@ Here is the list of the supported data type so far:
 -   string: `$this->dataType()->string()`
 -   numeric: `$this->dataType()->numeric()`
 -   bool : `$this->dataType()->bool()`
+-   inArray
+-   isArrayOf
+-   etc...
 
 ### Use your Data class inside an action
 
@@ -157,7 +165,7 @@ MyAction::handle(MyActionData::make([
 
 ```
 
-Can you imagine you have to call your `CustomData`(MyActionData) wherever you are using yoour actioon, that's too much🤮 🤮 🤮 🤮 . Now the good news is that, you can extends the `Kakaprodo\CustomData\Helpers\CustomActionBuilder` class to your action and then, it will do for you the injection magic of your customData using its `process` method. (What?😳, Noooo way😎!).
+Can you imagine you have to call your `CustomData`(MyActionData) whenever you are using yoour action, that's too much🤮 🤮 🤮 🤮 . Now the good news is that, you can extends the `Kakaprodo\CustomData\Helpers\CustomActionBuilder` class to your action and then, it will do for you the injection magic of your customData using its `process` method. (What?😳, Noooo way😎!).
 
 ```php
 //After
@@ -195,6 +203,31 @@ The `process` method can support also an existing CustomData object like:
 
     MyAction::process($data);
 ```
+
+## Support Queue on Action
+
+In order to use queue, you should extend first the `CustomActionBuilder` class to your action. then Call your action this way
+
+```php
+
+    MyAction::queue()->process([
+        'email' => 'email@gmail.com',
+        'user' => new User()
+    ]);
+```
+
+You can also define that your action supports queue direclty in your action class,
+
+```php
+class MyAction extends CustomActionBuilder
+{
+    public $shouldQueue = true;
+
+    public $onQueue = 'default';
+}
+```
+
+`Note`: Only the action's handle method will be executed in queue but the data that will be injected in queue will be processed before dispatching the queue
 
 ## Support Dynamic handler method on class that extends CustomActionBuilder
 
@@ -261,9 +294,9 @@ In case you may want to generate a unique key for your custom data, you can use 
 ```php
  $data = CreateUserData::make([
         'email' => 'email@gmail.com',
-        'user' => 1
+        'name' => 'prodo'
     ]);
- $data->dataKey(); // result: email=email@gmail.com@user=1
+ $data->dataKey(); // name__eq__prodo-cd-email__eq__email@gmail.com
 ```
 
 The key is generated based on the provided customData properties, so Inside the customData class, you can be able to
