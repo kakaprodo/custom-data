@@ -1,0 +1,18 @@
+<?php
+
+namespace {name_space};
+
+use Kakaprodo\CustomData\CustomData;
+
+class {class_name} extends CustomData
+{
+    protected function expectedProperties(): array
+    {
+        return [];
+    }
+
+    public function boot()
+    {
+        // make validation before data is injected to action
+    }
+}
