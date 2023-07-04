@@ -83,7 +83,7 @@ abstract class CustomActionBuilder
         $data,
         ?callable $beforeDataBoot = null
     ) {
-        $action = static::$existingActionInstance ?? (new static());
+        $action =  self::getActionInstance();
 
         $customData = $action->dataToInject($action, $data, $beforeDataBoot);
 
@@ -92,6 +92,23 @@ abstract class CustomActionBuilder
         }
 
         return $action->{static::$handleMethod}($customData);
+    }
+
+    /**
+     * check if there is an existing action instance to
+     * use and if not create new one
+     */
+    public static function getActionInstance()
+    {
+        $action =  (new static());
+
+        $existingActionInstance = static::$existingActionInstance;
+
+        $action = ($existingActionInstance  instanceof $action) ? $existingActionInstance : $action;
+
+        static::$existingActionInstance = null;
+
+        return  $action;
     }
 
     /**
