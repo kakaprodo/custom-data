@@ -84,6 +84,14 @@ abstract class DataTypeHubAbstract
     }
 
     /**
+     * the numeric clone
+     */
+    public function number($default = null)
+    {
+        return $this->numeric($default);
+    }
+
+    /**
      * define that a property is a boolean
      */
     public function bool($default = null)

@@ -3,13 +3,20 @@
 namespace Kakaprodo\CustomData\Traits;
 
 use Exception;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Kakaprodo\CustomData\CustomData;
+use Illuminate\Database\Eloquent\Model;
+use Kakaprodo\CustomData\Lib\CustomDataBase;
 use Kakaprodo\CustomData\Exceptions\UnCallableValueException;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 
 trait HasCustomDataHelper
 {
+    /**
+     * the unique key to be geberated only for the validated data
+     */
+    protected $uniqueCustomDataKey = null;
+
     /**
      * Check if a string ends with a given string
      */
@@ -68,17 +75,16 @@ trait HasCustomDataHelper
      */
     public function dataKey()
     {
+        if ($this->uniqueCustomDataKey) return $this->uniqueCustomDataKey;
+
         $keyString = [];
 
-        foreach ($this->expectedProperties() as $key => $value) {
-            $property = str_replace('?', '', is_numeric($key) ? $value : $key);
+        foreach ($this->validatedProperties as $property => $value) {
 
             if (in_array($property, $this->ignoreForKeyGenerator())) continue;
 
             try {
-                $propertValue = $this->serializeValueForKey(
-                    $this->get($property, $this->optional($value)->default)
-                );
+                $propertValue = $this->serializeValueForKey($value);
             } catch (\Throwable $th) {
                 throw new Exception("was not able to use {$property} for the dataKey generator, please add the property {$property} among the ignoreForKeyGenerator");
             }
@@ -86,7 +92,7 @@ trait HasCustomDataHelper
             $keyString[] = $property . '__eq__' . $propertValue;
         }
 
-        return implode('-cd-', $keyString);
+        return $this->uniqueCustomDataKey = Str::slug(implode('-cd-', $keyString));
     }
 
     /**

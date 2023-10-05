@@ -6,6 +6,10 @@ use Kakaprodo\CustomData\Lib\CustomDataBase;
 
 abstract class CustomData extends CustomDataBase
 {
+    /**
+     * kept incoming data and data that will be
+     * set at runtime
+     */
     protected array $data = [];
 
     public function __construct(array $data)
@@ -72,6 +76,14 @@ abstract class CustomData extends CustomDataBase
         $this->{$property} = $default;
 
         return $default;
+    }
+
+    /**
+     * All validated properties
+     */
+    public function onlyValidated(): array
+    {
+        return $this->validatedProperties;
     }
 
     public function __toString()
