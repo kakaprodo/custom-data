@@ -6,7 +6,7 @@ use Exception;
 use Illuminate\Support\Str;
 use Kakaprodo\CustomData\CustomData;
 use Illuminate\Database\Eloquent\Model;
-use Kakaprodo\CustomData\Lib\CustomDataBase;
+use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 use Kakaprodo\CustomData\Exceptions\UnCallableValueException;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 
@@ -136,12 +136,33 @@ trait HasCustomDataHelper
      * only call a function if it is callbale otherwise return error 
      * or return the same passed value
      */
-    function callFunction($myFunction, $throwableMsg = null, ...$args)
+    public function callFunction($myFunction, $throwableMsg = null, ...$args)
     {
         if (is_callable($myFunction)) return $myFunction(...$args);
 
         if ($throwableMsg) throw new UnCallableValueException($throwableMsg);
 
         return $myFunction;
+    }
+
+    /**
+     * Extract form validation rules from expected data
+     */
+    public static function formValidationRules()
+    {
+        $fields = (new static)->expectedProperties();
+        $rules = [];
+
+        foreach ($fields as $key => $value) {
+            $property = str_replace('?', '', is_numeric($key) ? $value : $key);
+
+            $rule = $value instanceof DataTypeHub ? $value->getRules() : [];
+
+            if ($rule == []) continue;
+
+            $rules[$property] = $rule;
+        }
+
+        return $rules;
     }
 }
