@@ -11,6 +11,12 @@ use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 abstract class CustomDataBase
 {
     use HasCustomDataHelper;
+
+    /**
+     * The properties that have been validated
+     */
+    protected $validatedProperties = [];
+
     /**
      * Required  class properties 
      * 
@@ -60,6 +66,8 @@ abstract class CustomDataBase
                     $propertyValue->validate($propertyName);
                 }
 
+                $this->validatedProperties[$propertyName] = $this->$propertyName;
+
                 continue;
             }
 
@@ -69,6 +77,8 @@ abstract class CustomDataBase
 
             // validate the property type
             if ($shouldCheckDataType) $propertyValue->validate($propertyName);
+
+            $this->validatedProperties[$propertyName] = $this->$propertyName;
         }
     }
 

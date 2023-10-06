@@ -2,6 +2,14 @@
     "name": "kakaprodo/custom-data",
     "description": "A package that minimize mixed arguments of functions or methods",
     "license": "MIT",
+     "keywords": [
+        "laravel custom data",
+        "laravel data",
+        "kakaprodo",
+        "php",
+        "laravel typescript",
+        "php typescript"
+    ],
     "autoload": {
         "psr-4": {
             "Kakaprodo\\CustomData\\": "src/"
@@ -14,7 +22,10 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {},
+   "require": {
+        "php": ">=7.0",
+        "laravel/framework": ">=7.0"
+    },
     "extra": {
         "laravel": {
             "providers": [
