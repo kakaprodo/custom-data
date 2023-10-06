@@ -226,7 +226,7 @@ abstract class DataTypeHubAbstract
      */
     public function rules(array $rules)
     {
-        $this->rules = [...$this->rules, ...$rules];
+        $this->rules = array_merge($this->rules, $rules);
 
         return $this;
     }
