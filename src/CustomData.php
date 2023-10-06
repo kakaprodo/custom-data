@@ -12,7 +12,7 @@ abstract class CustomData extends CustomDataBase
      */
     protected array $data = [];
 
-    public function __construct(array $data)
+    public function __construct(array $data = [])
     {
         $this->data = $data;
     }
@@ -20,8 +20,10 @@ abstract class CustomData extends CustomDataBase
     /**
      * create data request instance
      */
-    public static function make(array $data, ?callable $beforeBoot = null)
-    {
+    public static function make(
+        array $data,
+        ?callable $beforeBoot = null
+    ) {
         $data =  new static($data);
 
         $data->validateRequiredProperties();

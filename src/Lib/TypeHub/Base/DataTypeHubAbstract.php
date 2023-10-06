@@ -62,6 +62,11 @@ abstract class DataTypeHubAbstract
      */
     public $childTypeShouldBe = null;
 
+    /**
+     * Laravel validation rules
+     */
+    public $rules = [];
+
     public function __construct(CustomDataBase $customData, $type = null)
     {
         $this->customData = $customData;
@@ -214,6 +219,36 @@ abstract class DataTypeHubAbstract
         $this->default = $default;
 
         return $this;
+    }
+
+    /**
+     * Set laravel request validation rules
+     */
+    public function rules(array $rules)
+    {
+        $this->rules = array_merge($this->rules, $rules);
+
+        return $this;
+    }
+
+    /**
+     * add a single laravel request validation rule
+     */
+    public function addRule($ruleName)
+    {
+        $this->rules[] = $ruleName;
+
+        return $this;
+    }
+
+    /**
+     * Get laravel rules that can be applied in the FormRequest
+     *
+     * @return array
+     */
+    public function getRules()
+    {
+        return $this->rules;
     }
 
     /**

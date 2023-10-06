@@ -411,4 +411,64 @@ class CreatePostData extends CustomData
 }
 ```
 
+## Fetch Only Validated Properties(v1.9.2)
+
+In case you want to fetch only the array of validated properties you can achieve that this way:
+
+```php
+  $data = CreatePostData::make([...]);
+
+  $validatedData = $data->onlyValidated();
+```
+
+## Support Laravel validation rules(v1.9.2)
+
+Sometimes it becomes too much when duplicating property rules in your custom data class and in your laravel FormRequest(validation). Now you can be able to
+define the formRequest rules in your customData that you can call in your FormRequest class:
+
+```php
+class CreatePostData extends CustomData
+{
+    protected function expectedProperties(): array
+    {
+        return [
+            'title' => $this->dataType()->string()->rules(['required','string','min:3'])
+        ];
+    }
+}
+```
+
+Then to call the defined rules you can merge the `CreatePostData::formValidationRules()` with other request properties
+that you want to validate:
+
+```php
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class CreatePostRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
+    public function authorize()
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
+    public function rules()
+    {
+        return array_merge(CreatePostData::formValidationRules(),[
+            "content" => ['required','max:1000']
+        ]);
+    }
+}
+```
+
 And that's all🤪😋, ==> Now go and build something beautiful, it's okay you can thanks me later, i understand that you are excited to install the package first😂
