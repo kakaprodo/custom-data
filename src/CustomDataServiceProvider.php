@@ -5,6 +5,7 @@ namespace Kakaprodo\CustomData;
 use Illuminate\Support\ServiceProvider;
 use Kakaprodo\CustomData\Command\CustomDataGenerator;
 use Kakaprodo\CustomData\Command\CustomActionGenerator;
+use Kakaprodo\CustomData\Command\ConfigInstallGenerator;
 
 class CustomDataServiceProvider extends ServiceProvider
 {
@@ -30,7 +31,7 @@ class CustomDataServiceProvider extends ServiceProvider
     {
         $this->registerCommands();
 
-        //$this->stackToPublish();
+        $this->stackToPublish();
     }
 
     protected function registerCommands()
@@ -40,6 +41,7 @@ class CustomDataServiceProvider extends ServiceProvider
         $this->commands([
             CustomActionGenerator::class,
             CustomDataGenerator::class,
+            ConfigInstallGenerator::class
         ]);
     }
 
@@ -48,6 +50,6 @@ class CustomDataServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/config/custom-data.php' => config_path('custom-data.php'),
-        ], 'config');
+        ], 'custom-data-config');
     }
 }
