@@ -58,11 +58,27 @@ trait HasCustomDataHelper
     }
 
     /**
-     * Throw exception when a field does not exist on customdata
+     * Throw exception when none  of the provided fields exist on customdata
+     * 
+     * @param array|string $fieldName: eg: can be [field1,field2], field1 , field1|field2
      */
     public function throwWhenFieldAbsent($fieldName, $msg = null)
     {
-        if ($this->$fieldName !== null) return;
+        $fields = is_array($fieldName) ? $fieldName :  explode('|', $fieldName);
+        $incrementForAbsence = [];
+
+        foreach ($fields as $field) {
+            $field = [
+                'name' => $field,
+                'exist' => $this->$field ? 1 : 0
+            ];
+
+            $incrementForAbsence[] =  $field;
+        }
+
+        if (collect($incrementForAbsence)->sum('exist') > 0) return;
+
+        $fieldName = implode(' or ', $fields);
 
         throw new MissedRequiredPropertyException($msg ?? "The {$fieldName} field is required");
     }
