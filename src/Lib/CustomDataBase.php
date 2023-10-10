@@ -71,8 +71,9 @@ abstract class CustomDataBase
                 continue;
             }
 
-            if ($valueForRequiredValidation === null) throw new MissedRequiredPropertyException(
-                "The property {$propertyName} is required on the class " . static::class
+            if ($valueForRequiredValidation === null) $this->throwError(
+                "The property {$propertyName} is required on the class " . static::class,
+                MissedRequiredPropertyException::class
             );
 
             // validate the property type
