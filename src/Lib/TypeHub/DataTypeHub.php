@@ -15,8 +15,9 @@ class DataTypeHub extends DataTypeHubAbstract
     {
         $this->propertyName = $propertyName;
 
-        if (!$this->selectedType)  throw new Exception(
-            "No data type was defined for the property {$propertyName} "
+        if (!$this->selectedType) $this->customData->throwError(
+            "No data type was defined for the property {$propertyName} ",
+            Exception::class
         );
 
         $propertyValue = $this->castValue($this->customData->get($propertyName, $this->default));
@@ -26,9 +27,10 @@ class DataTypeHub extends DataTypeHubAbstract
 
         $typeMatches = $this->checkTypeMatches($propertyValue, $selectedType);
 
-        if (!$typeMatches) throw new UnexpectedPropertyTypeException(
+        if (!$typeMatches) $this->customData->throwError(
             "Property {$propertyName}: Expected {$this->selectedType} but " .
-                gettype($propertyValue) . " given"
+                gettype($propertyValue) . " given",
+            UnexpectedPropertyTypeException::class
         );
     }
 

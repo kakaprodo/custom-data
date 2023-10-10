@@ -80,7 +80,10 @@ trait HasCustomDataHelper
 
         $fieldName = implode(' or ', $fields);
 
-        throw new MissedRequiredPropertyException($msg ?? "The {$fieldName} field is required");
+        $this->throwError(
+            $msg ?? "The {$fieldName} field is required",
+            MissedRequiredPropertyException::class
+        );
     }
 
     /**
@@ -102,7 +105,10 @@ trait HasCustomDataHelper
             try {
                 $propertValue = $this->serializeValueForKey($value);
             } catch (\Throwable $th) {
-                throw new Exception("was not able to use {$property} for the dataKey generator, please add the property {$property} among the ignoreForKeyGenerator");
+                $this->throwError(
+                    "was not able to use {$property} for the dataKey generator, please add the property {$property} among the ignoreForKeyGenerator",
+                    Exception::class
+                );
             }
 
             $keyString[] = $property . '__eq__' . $propertValue;
@@ -156,7 +162,7 @@ trait HasCustomDataHelper
     {
         if (is_callable($myFunction)) return $myFunction(...$args);
 
-        if ($throwableMsg) throw new UnCallableValueException($throwableMsg);
+        if ($throwableMsg)  $this->throwError($throwableMsg, UnCallableValueException::class);
 
         return $myFunction;
     }
@@ -180,5 +186,21 @@ trait HasCustomDataHelper
         }
 
         return $rules;
+    }
+
+    /**
+     * Gate to throw any exception happening in customData class
+     */
+    public function throwError($msg, $exceptionClassPath)
+    {
+        if (method_exists($this, 'customErrorHandling')) {
+            try {
+                throw new $exceptionClassPath($msg);
+            } catch (\Throwable $th) {
+                return $this->customErrorHandling($msg, $th);
+            }
+        }
+
+        throw new $exceptionClassPath($msg);
     }
 }

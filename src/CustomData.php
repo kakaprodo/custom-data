@@ -26,13 +26,18 @@ abstract class CustomData extends CustomDataBase
     ) {
         $data =  new static($data);
 
-        $data->validateRequiredProperties();
+        return  $data->handleLifecycle($beforeBoot);
+    }
 
-        if ($beforeBoot) $beforeBoot($data);
+    protected function handleLifecycle(?callable $beforeBoot = null)
+    {
+        $this->validateRequiredProperties();
 
-        $data->boot();
+        if ($beforeBoot) $beforeBoot($this);
 
-        return $data;
+        $this->boot();
+
+        return $this;
     }
 
     public function beforeBoot(callable $callable)

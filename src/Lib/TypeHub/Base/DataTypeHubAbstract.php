@@ -180,7 +180,7 @@ abstract class DataTypeHubAbstract
             $errorMsg = "{$this->propertyName} should be one of: " . implode(',', $items);
             $errorMsg .= " but {$value} given";
 
-            throw new UnExpectedArrayItemType($errorMsg);
+            $this->customData->throwError($errorMsg, UnExpectedArrayItemType::class);
         });
     }
 
@@ -192,8 +192,9 @@ abstract class DataTypeHubAbstract
     {
         if (!$childType) return true;
 
-        if ($childType == self::DATA_ARRAY) throw new Exception(
-            "child type of {$this->propertyName} is not supported"
+        if ($childType == self::DATA_ARRAY) $this->customData->throwError(
+            "child type of {$this->propertyName} is not supported",
+            Exception::class
         );
 
         foreach ($items as $key => $item) {
@@ -202,9 +203,10 @@ abstract class DataTypeHubAbstract
 
             if ($this->typeOfValueIs($type, $item, $childType)) continue;
 
-            throw new UnExpectedArrayItemType(
+            $this->customData->throwError(
                 "The item {$this->propertyName}[{$key}] should be of type: " . $childType
-                    . " but " . gettype($item) . " given"
+                    . " but " . gettype($item) . " given",
+                UnExpectedArrayItemType::class
             );
         }
 
@@ -292,8 +294,9 @@ abstract class DataTypeHubAbstract
                     $result = $customType($value);
                     if ($result) return $result;
 
-                    throw new Exception(
-                        "Validation failed on {$this->propertyName} property"
+                    $this->customData->throwError(
+                        "Validation failed on {$this->propertyName} property",
+                        Exception::class
                     );
                 }
 
