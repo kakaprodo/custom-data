@@ -3,6 +3,8 @@
 namespace Kakaprodo\CustomData\Lib\TypeHub\Base;
 
 use Exception;
+use Kakaprodo\CustomData\CustomData;
+use ReflectionClass;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
 use Kakaprodo\CustomData\Exceptions\UnExpectedArrayItemType;
 
@@ -201,7 +203,15 @@ abstract class DataTypeHubAbstract
 
             $type = $this->isCustomType($childType) ? self::DATA_CUSTOM : $childType;
 
-            if ($this->typeOfValueIs($type, $item, $childType)) continue;
+            $castedItem = $this->custValueToCustomData($item, $childType);
+
+            if ($this->typeOfValueIs($type, $castedItem, $childType)) {
+                if (!($item instanceof CustomData)) {
+                    $items[$key] = $castedItem;
+                }
+
+                continue;
+            }
 
             $this->customData->throwError(
                 "The item {$this->propertyName}[{$key}] should be of type: " . $childType
@@ -210,7 +220,28 @@ abstract class DataTypeHubAbstract
             );
         }
 
+        $this->customData->{$this->propertyName} = $items;
+
         return true;
+    }
+
+    /**
+     * check if a given type is custom data class, then cast
+     * it to custom data class
+     */
+    private function custValueToCustomData($value, $type)
+    {
+        if (($value instanceof CustomData) || !is_array($value)) return $value;
+
+        if (!class_exists($type)) return $value;
+
+        $reflection = new ReflectionClass($type);
+
+        $classParent = $reflection->getParentClass();
+
+        if (optional($classParent)->getName() != CustomData::class) return $value;
+
+        return $type::make($value);
     }
 
     /**
@@ -300,7 +331,13 @@ abstract class DataTypeHubAbstract
                     );
                 }
 
-                return is_a($value, $customType);
+                $value = $this->custValueToCustomData($value, $customType);
+
+                $validationPassed =  is_a($value, $customType);
+
+                $this->customData->{$this->propertyName} = $value;
+
+                return $validationPassed;
             }
         ][$type] ?? null;
 
