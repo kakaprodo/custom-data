@@ -63,4 +63,14 @@ class QueueCustomDataActionJob implements ShouldQueue
 
         return $this->action->$handler($this->data);
     }
+
+    /**
+     * Get the display name for the queued job.
+     *
+     * @return string
+     */
+    public function displayName()
+    {
+        return get_class($this->action);
+    }
 }
