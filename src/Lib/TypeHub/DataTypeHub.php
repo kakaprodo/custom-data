@@ -28,7 +28,7 @@ class DataTypeHub extends DataTypeHubAbstract
         $typeMatches = $this->checkTypeMatches($propertyValue, $selectedType);
 
         if (!$typeMatches) $this->customData->throwError(
-            "Property {$propertyName} of " . get_class($this->customData) . ": Expected {$this->selectedType} but " .
+            $this->errorMessage ?? "Property {$propertyName} of " . get_class($this->customData) . ": Expected {$this->selectedType} but " .
                 gettype($propertyValue) . " given",
             UnexpectedPropertyTypeException::class
         );
