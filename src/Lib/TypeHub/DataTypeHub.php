@@ -21,11 +21,11 @@ class DataTypeHub extends DataTypeHubAbstract
         );
 
         $propertyValue = $this->castValue($this->customData->get($propertyName, $this->default));
-        $selectedType = $this->selectedType;
+        // $selectedType = $this->selectedType;
 
-        if (is_callable($selectedType)) return $selectedType($propertyValue);
+        //if (is_callable($selectedType)) return $selectedType($propertyValue, $this);
 
-        $typeMatches = $this->checkTypeMatches($propertyValue, $selectedType);
+        $typeMatches = $this->checkTypeMatches($propertyValue, $this->selectedType);
 
         if (!$typeMatches) $this->customData->throwError(
             $this->errorMessage ?? "Property {$propertyName} of " . get_class($this->customData) . ": Expected {$this->selectedType} but " .
