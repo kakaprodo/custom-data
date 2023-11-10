@@ -235,13 +235,31 @@ abstract class DataTypeHubAbstract
 
         if (!class_exists($type)) return $value;
 
-        $reflection = new ReflectionClass($type);
+        $getTopParent = $this->getTopmostParentClassName($type, CustomData::class);
 
-        $classParent = $reflection->getParentClass();
-
-        if (optional($classParent)->getName() != CustomData::class) return $value;
+        if ($getTopParent != CustomData::class) return $value;
 
         return $type::make($value);
+    }
+
+    /**
+     * Get the latest parent of a given class until to find
+     * the provided parentClassToSearch
+     */
+    private function getTopmostParentClassName($className, $parentClassToSearch = null)
+    {
+        $reflectionClass = new ReflectionClass($className);
+        $stopSearching = false;
+
+        while ((($reflectionParentClass = $reflectionClass->getParentClass()) && !$stopSearching)) {
+            $reflectionClass = $reflectionParentClass;
+
+            if ($reflectionClass->getName() == $parentClassToSearch) {
+                $stopSearching = true;
+            }
+        }
+
+        return $reflectionClass->getName();
     }
 
     /**
