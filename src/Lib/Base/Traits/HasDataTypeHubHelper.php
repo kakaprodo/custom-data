@@ -1,6 +1,6 @@
 <?php
 
-namespace Kakaprodo\CustomData\Lib\TypeHub\Base\Traits;
+namespace Kakaprodo\CustomData\Lib\Base\Traits;
 
 use Exception;
 use ReflectionClass;

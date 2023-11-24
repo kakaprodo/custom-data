@@ -33,6 +33,8 @@ abstract class CustomData extends CustomDataBase
     {
         $this->validateRequiredProperties();
 
+        $this->propertyNameTransformation();
+
         if ($beforeBoot) $beforeBoot($this);
 
         $this->boot();

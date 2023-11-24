@@ -1,13 +1,15 @@
 <?php
 
-namespace Kakaprodo\CustomData\Lib\TypeHub\Base;
+namespace Kakaprodo\CustomData\Lib\Base;
 
 use Kakaprodo\CustomData\Lib\CustomDataBase;
+use Kakaprodo\CustomData\Lib\Base\DataPropertyAbstract;
 use Kakaprodo\CustomData\Exceptions\UnExpectedArrayItemType;
-use Kakaprodo\CustomData\Lib\TypeHub\Base\Traits\HasDataTypeHubHelper;
+use Kakaprodo\CustomData\Lib\Base\Traits\HasDataTypeHubHelper;
+use Kakaprodo\CustomData\Exceptions\UnexpectedPropertyTypeException;
 
 
-abstract class DataTypeHubAbstract
+abstract class DataTypeHubAbstract extends DataPropertyAbstract
 {
     use HasDataTypeHubHelper;
 
@@ -31,16 +33,6 @@ abstract class DataTypeHubAbstract
     ];
 
     /**
-     * The definedd type of the property 
-     */
-    protected $selectedType = null;
-
-    /**
-     * the name of the property we are validating
-     */
-    protected $propertyName = null;
-
-    /**
      * The type to check iin case the provided property type
      * fails
      */
@@ -50,11 +42,6 @@ abstract class DataTypeHubAbstract
      * carry a function that cast a property to a given type
      */
     protected $cast = null;
-
-    /**
-     * @var CustomDataBase
-     */
-    protected $customData;
 
     public $default = null;
 
@@ -131,6 +118,24 @@ abstract class DataTypeHubAbstract
 
         return $this->default($default);
     }
+
+    /**
+     * Not tolerate empty value on property
+     */
+    public function notEmpty()
+    {
+        $this->addBeforeAuditAction(function () {
+            if (!empty($this->value())) return;
+
+            $this->customData->throwError(
+                "The Property {$this->propertyName} of " . get_class($this->customData) . " should not be empty",
+                UnexpectedPropertyTypeException::class
+            );
+        });
+
+        return $this;
+    }
+
 
     /**
      * Define your proper way to check the property type,

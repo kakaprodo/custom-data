@@ -203,4 +203,32 @@ trait HasCustomDataHelper
 
         throw new $exceptionClassPath($msg);
     }
+
+    /**
+     * Transform the name of properties
+     * 
+     * eg: form PascalCase to snake_case
+     */
+    protected function propertyNameTransformation()
+    {
+        if ($this->transformProperties == []) return;
+
+        $newData = [];
+        $newValidatedProperty = [];
+        $propertyToTransform = $this->transformProperties;
+
+        foreach ($this->data as $key => $value) {
+            $newKey = $propertyToTransform[$key] ?? $key;
+            $newData[$newKey] = $value;
+
+            $keyIsValidated = isset($this->validatedProperties[$key]);
+
+            if ($keyIsValidated) {
+                $newValidatedProperty[$newKey] = $value;
+            }
+        }
+
+        $this->data = $newData;
+        $this->validatedProperties = $newValidatedProperty;
+    }
 }
