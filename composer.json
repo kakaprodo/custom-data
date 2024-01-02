@@ -1,6 +1,6 @@
 {
     "name": "kakaprodo/custom-data",
-    "description": "A package that minimize mixed arguments of functions or methods",
+    "description": "A Laravel package that wraps function arguments together into a single CustomData class allowing separate processing and validation for each argument.",
     "license": "MIT",
      "keywords": [
         "laravel custom data",
