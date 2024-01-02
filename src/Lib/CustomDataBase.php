@@ -2,9 +2,9 @@
 
 namespace Kakaprodo\CustomData\Lib;
 
-use Exception;
 use Kakaprodo\CustomData\Helpers\Optional;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
+use Kakaprodo\CustomData\Lib\Property\DataProperty;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 
@@ -16,6 +16,11 @@ abstract class CustomDataBase
      * The properties that have been validated
      */
     protected $validatedProperties = [];
+
+    /**
+     * Mapping array of properties name transformation
+     */
+    public $transformProperties = [];
 
     /**
      * Required  class properties 
@@ -33,6 +38,14 @@ abstract class CustomDataBase
         return new DataTypeHub($this, $customerType);
     }
 
+    /**
+     * Gate to property manupilation
+     */
+    public function property($customerType = null): DataProperty
+    {
+        return new DataProperty($this, $customerType);
+    }
+
     public function optional($object)
     {
         return new Optional($object);
@@ -43,6 +56,7 @@ abstract class CustomDataBase
      */
     protected function validateRequiredProperties()
     {
+        if (!$this->shouldValidateProperties()) return;
 
         foreach ($this->expectedProperties() as $propertyName => $propertyValue) {
 
@@ -63,7 +77,7 @@ abstract class CustomDataBase
             if ($this->strEndsWith($unSinitizePropertyName, '?')) {
 
                 if ($shouldCheckDataType && $valueForRequiredValidation) {
-                    $propertyValue->validate($propertyName);
+                    $propertyValue->audit($propertyName);
                 }
 
                 $this->validatedProperties[$propertyName] = $this->$propertyName;
@@ -77,7 +91,7 @@ abstract class CustomDataBase
             );
 
             // validate the property type
-            if ($shouldCheckDataType) $propertyValue->validate($propertyName);
+            if ($shouldCheckDataType) $propertyValue->audit($propertyName);
 
             $this->validatedProperties[$propertyName] = $this->$propertyName;
         }
@@ -90,5 +104,14 @@ abstract class CustomDataBase
     protected function ignoreForKeyGenerator(): array
     {
         return [];
+    }
+
+    /**
+     * Define whether the package should validate
+     * class properties
+     */
+    public function shouldValidateProperties(): bool
+    {
+        return true;
     }
 }

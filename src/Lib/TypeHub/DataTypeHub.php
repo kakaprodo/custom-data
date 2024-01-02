@@ -3,7 +3,7 @@
 namespace Kakaprodo\CustomData\Lib\TypeHub;
 
 use Exception;
-use Kakaprodo\CustomData\Lib\TypeHub\Base\DataTypeHubAbstract;
+use Kakaprodo\CustomData\Lib\Base\DataTypeHubAbstract;
 use Kakaprodo\CustomData\Exceptions\UnexpectedPropertyTypeException;
 
 class DataTypeHub extends DataTypeHubAbstract
@@ -13,8 +13,6 @@ class DataTypeHub extends DataTypeHubAbstract
      */
     public function validate($propertyName)
     {
-        $this->propertyName = $propertyName;
-
         if (!$this->selectedType) $this->customData->throwError(
             "No data type was defined for the property {$propertyName} ",
             Exception::class
