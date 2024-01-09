@@ -58,4 +58,16 @@ class DataProperty extends DataTypeHub
 
         return $this;
     }
+
+    /**
+     * Transform property
+     */
+    public function transform($newProperty)
+    {
+        $this->addAfterAuditAction(function () use ($newProperty) {
+            $this->customData->transformProperties[$this->propertyName] = is_callable($newProperty) ? $newProperty($this) : $newProperty;
+        });
+
+        return $this;
+    }
 }

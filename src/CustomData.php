@@ -2,6 +2,7 @@
 
 namespace Kakaprodo\CustomData;
 
+use Kakaprodo\CustomData\Helpers\FillData;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
 
 abstract class CustomData extends CustomDataBase
@@ -21,10 +22,12 @@ abstract class CustomData extends CustomDataBase
      * create data request instance
      */
     public static function make(
-        array $data,
+        $payload,
         ?callable $beforeBoot = null
     ) {
-        $data =  new static($data);
+        $filledData = is_callable($payload) ? FillData::format($payload) : $payload;
+
+        $data =  new static($filledData);
 
         return  $data->handleLifecycle($beforeBoot);
     }
@@ -97,11 +100,11 @@ abstract class CustomData extends CustomDataBase
 
     public function __toString()
     {
-        return json_encode($this->all());
+        return json_encode($this->unserializeValidated());
     }
 
     public function __toArray()
     {
-        return $this->all();
+        return $this->unserializeValidated();
     }
 }
