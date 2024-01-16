@@ -4,6 +4,7 @@ namespace Kakaprodo\CustomData\Traits;
 
 use Exception;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Kakaprodo\CustomData\CustomData;
 use Illuminate\Database\Eloquent\Model;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
@@ -170,7 +171,7 @@ trait HasCustomDataHelper
     /**
      * Extract form validation rules from expected data
      */
-    public static function formValidationRules()
+    public static function formValidationRules(Request $request = null)
     {
         $fields = (new static)->expectedProperties();
         $rules = [];
@@ -178,11 +179,11 @@ trait HasCustomDataHelper
         foreach ($fields as $key => $value) {
             $property = str_replace('?', '', is_numeric($key) ? $value : $key);
 
-            $rule = $value instanceof DataTypeHub ? $value->getRules() : [];
+            $rules = $value instanceof DataTypeHub ? $value->getRules() : [];
 
-            if ($rule == []) continue;
+            if ($rules == []) continue;
 
-            $rules[$property] = $rule;
+            $rules[$property] = is_callable($rules) ? $rules($request) : $rules;
         }
 
         return $rules;

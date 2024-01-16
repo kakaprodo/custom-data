@@ -32,6 +32,13 @@ abstract class DataPropertyAbstract
     protected $afterAuditActions = [];
 
     /**
+     * Laravel validation rules
+     * 
+     * @var callable|array
+     */
+    public $rules;
+
+    /**
      * validate a given property
      */
     abstract public function validate($propertyName);
@@ -107,5 +114,27 @@ abstract class DataPropertyAbstract
         }
 
         return $this;
+    }
+
+    /**
+     * Set laravel request validation rules
+     * 
+     * @param callable|array $rules
+     */
+    public function rules($rules)
+    {
+        $this->rules = $rules;
+
+        return $this;
+    }
+
+    /**
+     * Get laravel rules that can be applied in the FormRequest
+     *
+     * @return callable|array
+     */
+    public function getRules()
+    {
+        return $this->rules;
     }
 }
