@@ -174,7 +174,7 @@ trait HasCustomDataHelper
     public static function formValidationRules(Request $request = null)
     {
         $fields = (new static)->expectedProperties();
-        $rules = [];
+        $extractedRules = [];
 
         foreach ($fields as $key => $value) {
             $property = str_replace('?', '', is_numeric($key) ? $value : $key);
@@ -183,10 +183,10 @@ trait HasCustomDataHelper
 
             if ($rules == []) continue;
 
-            $rules[$property] = is_callable($rules) ? $rules($request) : $rules;
+            $extractedRules[$property] = is_callable($rules) ? $rules($request) : $rules;
         }
 
-        return $rules;
+        return $extractedRules;
     }
 
     /**
