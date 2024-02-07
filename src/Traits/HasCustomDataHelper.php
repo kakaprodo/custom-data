@@ -173,6 +173,8 @@ trait HasCustomDataHelper
      */
     public static function formValidationRules(Request $request = null)
     {
+        $request = $request ?? request();
+
         $fields = (new static)->expectedProperties();
         $extractedRules = [];
 
