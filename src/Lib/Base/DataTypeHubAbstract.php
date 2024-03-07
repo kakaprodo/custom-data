@@ -271,7 +271,11 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
         $this->addBeforeAuditAction(function () use ($statement, $newType) {
             $canChangeType = $this->customData->callFunction($statement, null, $this);
 
-            if ($canChangeType) $this->selectedType = $newType;
+            if ($canChangeType) $this->selectedType = $this->customData->callFunction(
+                $newType,
+                null,
+                $this
+            );
         });
 
         return $this;

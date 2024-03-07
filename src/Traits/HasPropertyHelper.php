@@ -63,4 +63,22 @@ trait HasPropertyHelper
 
         return $propertyValue->default;
     }
+
+    /**
+     * check if a given property exists
+     */
+    public function propertyExists(string $propertyName)
+    {
+        return (bool) ($this->data[$propertyName] ?? null);
+    }
+
+    /**
+     * Get original value of a casted property
+     */
+    public function originalValue(string $propertyName)
+    {
+        $originalValue = 'original_' . $propertyName;
+
+        return $this->$originalValue;
+    }
 }

@@ -91,6 +91,8 @@ class DataProperty extends DataTypeHub
 
             $propertyName = $this->propertyName;
 
+            $this->copyPropertyValue('original_' . $propertyName);
+
             $this->customData->$propertyName = CustomData::isCallable($newValue)
                 ? $newValue($this->value())
                 : $newValue;
@@ -110,5 +112,30 @@ class DataProperty extends DataTypeHub
         return $this->castTo(
             fn () => $fullyClassName::where($column, $this->value())->first()
         );
+    }
+
+    /**
+     * Make a copy of the current property value
+     * and add it among inputed data
+     */
+    public function copy($copyName = null, $shouldReplaceProperty = false)
+    {
+        $this->addAfterAuditAction(fn () => $this->copyPropertyValue($copyName, $shouldReplaceProperty));
+
+        return $this;
+    }
+
+    /**
+     * Logic to copy a property value
+     */
+    private function copyPropertyValue($copyName = null, $shouldReplaceProperty = false)
+    {
+        $copyName = $copyName ?? $this->propertyName . '_copy';
+
+        $copyName = $this->customData->propertyExists($copyName) && !$shouldReplaceProperty
+            ? $copyName . '_copy'
+            : $copyName;
+
+        $this->customData->$copyName = $this->value();
     }
 }
