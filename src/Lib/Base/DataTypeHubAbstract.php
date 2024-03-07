@@ -2,6 +2,8 @@
 
 namespace Kakaprodo\CustomData\Lib\Base;
 
+use Kakaprodo\CustomData\CustomData;
+use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
 use Kakaprodo\CustomData\Lib\Base\DataPropertyAbstract;
 use Kakaprodo\CustomData\Exceptions\UnExpectedArrayItemType;
@@ -39,25 +41,23 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
     protected $additionalType = null;
 
     /**
-     * carry a function that cast a property to a given type
-     */
-    protected $cast = null;
-
-    public $default = null;
-
-    /**
      * applicable on array child
      */
     public $childTypeShouldBe = null;
 
     /**
-     * The error message of a given field
+     * The validation error message of a given field
      */
     public $errorMessage = null;
 
-    public function __construct(CustomDataBase $customData, $type = null)
+    /**
+     * closure keeper, of the casted value of the property 
+     */
+    protected $castForValidation = null;
+
+    public function __construct(CustomDataBase &$customData, $type = null)
     {
-        $this->customData = $customData;
+        $this->customData = &$customData;
         $this->selectedType = $type;
     }
 
@@ -123,7 +123,10 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
             if (!empty($this->value())) return;
 
             $this->customData->throwError(
-                "The Property {$this->propertyName} of " . get_class($this->customData) . " should not be empty",
+                $this->errorMessage ??
+                    "The Property {$this->propertyName} of "
+                    . get_class($this->customData)
+                    . " should not be empty.",
                 UnexpectedPropertyTypeException::class
             );
         });
@@ -149,18 +152,25 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
      */
     public function castForValidation(callable $castCall)
     {
-        $this->cast = $castCall;
+        $this->castForValidation = $castCall;
 
         return $this;
     }
 
     /**
-     * get the value of the property after its casting,
-     * if no casting provided then return its original value
+     * Get the value of the property after its casting,
+     * if no casting provided then return its original value.
+     * 
+     * Note this is only for validation, it will not be kept on 
+     * the property
      */
-    public function castValue($propertyValue)
+    protected function castValue($propertyValue)
     {
-        return $this->customData->callFunction($this->cast, null, $propertyValue) ?? $propertyValue;
+        return $this->customData->callFunction(
+            $this->castForValidation,
+            null,
+            $propertyValue
+        ) ?? $propertyValue;
     }
 
     /**
@@ -186,18 +196,8 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
             $errorMsg = "{$this->propertyName} should be one of: " . implode(',', $items);
             $errorMsg .= " but {$value} given";
 
-            $this->customData->throwError($errorMsg, UnExpectedArrayItemType::class);
+            $this->customData->throwError($this->errorMessage ?? $errorMsg, UnExpectedArrayItemType::class);
         });
-    }
-
-    /**
-     * Set a default value of a data type
-     */
-    public function default($default = null)
-    {
-        $this->default = $default;
-
-        return $this;
     }
 
     /**
@@ -223,11 +223,60 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
     }
 
     /**
-     * Set the error message on a given field
+     * Set the validation error message on a given field
      */
     public function message($message)
     {
         $this->errorMessage = $message;
+
+        return $this;
+    }
+
+    /**
+     * Define a condition when an optional property need
+     * to be required.
+     * 
+     * @param string|callable $property
+     * @param mixed $value
+     */
+    public function requiredWhen($property, $value = null)
+    {
+        $this->addBeforeAuditAction(function () use ($property, $value) {
+            if (!empty($this->value())) return;
+
+            $isRequired = CustomData::isCallable($property) ?
+                $property($this)
+                : ($this->customData->defaultValue($property) == $value);
+
+            if (!$isRequired) return;
+
+            $errorMsg = CustomData::isCallable($property) ?
+                "The property {$this->propertyName} is required when the property {$property} is equal to :" . $value
+                : "The property {$this->propertyName} is required because of the provided statement";
+
+            $this->customData->throwError($this->errorMessage ?? $errorMsg, MissedRequiredPropertyException::class);
+        });
+
+        return $this;
+    }
+
+    /**
+     * Change property name when a given statement is true
+     * 
+     * @param string|callable $statement
+     * @param string|callable $newType : any supported type
+     */
+    public function typeWhen($statement, $newType)
+    {
+        $this->addBeforeAuditAction(function () use ($statement, $newType) {
+            $canChangeType = $this->customData->callFunction($statement, null, $this);
+
+            if ($canChangeType) $this->selectedType = $this->customData->callFunction(
+                $newType,
+                null,
+                $this
+            );
+        });
 
         return $this;
     }

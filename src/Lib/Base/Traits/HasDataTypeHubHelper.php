@@ -5,6 +5,7 @@ namespace Kakaprodo\CustomData\Lib\Base\Traits;
 use Exception;
 use ReflectionClass;
 use Kakaprodo\CustomData\CustomData;
+use Kakaprodo\CustomData\Exceptions\UnExpectedArrayItemType;
 
 
 trait HasDataTypeHubHelper
@@ -18,7 +19,7 @@ trait HasDataTypeHubHelper
         if (!$childType) return true;
 
         if ($childType == self::DATA_ARRAY) $this->customData->throwError(
-            "child type of {$this->propertyName} is not supported",
+            $this->errorMessage ?? "child type of {$this->propertyName} is not supported",
             Exception::class
         );
 
@@ -37,7 +38,7 @@ trait HasDataTypeHubHelper
             }
 
             $this->customData->throwError(
-                "The item {$this->propertyName}[{$key}] should be of type: " . $childType
+                $this->errorMessage ?? "The item {$this->propertyName}[{$key}] should be of type: " . $childType
                     . " but " . gettype($item) . " given",
                 UnExpectedArrayItemType::class
             );
@@ -101,7 +102,7 @@ trait HasDataTypeHubHelper
             self::DATA_NUMERIC => fn () => is_numeric($value),
             self::DATA_CUSTOM => function () use ($value, $customType) {
 
-                if (is_callable($customType)) {
+                if (CustomData::isCallable($customType)) {
                     $result = $customType($value, $this);
                     if ($result) return $result;
 

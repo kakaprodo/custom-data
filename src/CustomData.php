@@ -25,7 +25,7 @@ abstract class CustomData extends CustomDataBase
         $payload,
         ?callable $beforeBoot = null
     ) {
-        $filledData = is_callable($payload) ? FillData::format($payload) : $payload;
+        $filledData = self::isCallable($payload) ? FillData::format($payload) : $payload;
 
         $data =  new static($filledData);
 

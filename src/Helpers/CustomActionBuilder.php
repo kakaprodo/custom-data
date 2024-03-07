@@ -52,14 +52,17 @@ abstract class CustomActionBuilder
     /**
      * define that the action should be processed in the background
      * after data validation
+     * 
+     * @param string? $queueName 
+     * @param string? $queuWhen : queue action based on a condition
      */
-    public static function queue($queueName = null)
+    public static function queue($queueName = null, $queuWhen = true)
     {
         $action = (new static());
 
         static::$existingActionInstance = $action;
 
-        static::$existingActionInstance->shouldQueue($queueName);
+        static::$existingActionInstance->shouldQueue($queueName, $queuWhen);
 
         return new static;
     }
@@ -67,9 +70,9 @@ abstract class CustomActionBuilder
     /**
      * set the ability to queue the action on a given name
      */
-    protected function shouldQueue($queueName = null)
+    protected function shouldQueue($queueName = null, $queuWhen = true)
     {
-        $this->shouldQueue = true;
+        $this->shouldQueue = $queuWhen;
         $this->onQueue = $queueName;
     }
 

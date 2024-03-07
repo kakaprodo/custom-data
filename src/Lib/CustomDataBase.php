@@ -4,13 +4,16 @@ namespace Kakaprodo\CustomData\Lib;
 
 use Kakaprodo\CustomData\Helpers\Optional;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
+use Kakaprodo\CustomData\Traits\HasPropertyHelper;
 use Kakaprodo\CustomData\Lib\Property\DataProperty;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 
 abstract class CustomDataBase
 {
-    use HasCustomDataHelper;
+    use
+        HasCustomDataHelper,
+        HasPropertyHelper;
 
     /**
      * The properties that have been validated
@@ -56,9 +59,13 @@ abstract class CustomDataBase
      */
     protected function validateRequiredProperties()
     {
-        if (!$this->shouldValidateProperties()) return;
+        if (!$this->shouldAuditProperties()) return;
 
+        /**
+         * @var DataTypeHub $propertyValue
+         */
         foreach ($this->expectedProperties() as $propertyName => $propertyValue) {
+
 
             // get the property the way it is with a ? at the end
             $unSinitizePropertyName = is_numeric($propertyName) ? $propertyValue : $propertyName;
@@ -66,19 +73,16 @@ abstract class CustomDataBase
             // remove the ? symbol from the name
             $propertyName = $this->replaceLast('?', '', $unSinitizePropertyName);
 
-            $shouldCheckDataType = ($propertyValue instanceof DataTypeHub);
+            $canAudit = ($propertyValue instanceof DataTypeHub);
 
             $valueForRequiredValidation = $this->get(
                 $propertyName,
-                $shouldCheckDataType ? $propertyValue->default : null
+                $canAudit ? $propertyValue->default : null
             );
 
             // if a property is optional
             if ($this->strEndsWith($unSinitizePropertyName, '?')) {
-
-                if ($shouldCheckDataType && $valueForRequiredValidation) {
-                    $propertyValue->audit($propertyName);
-                }
+                if ($canAudit) $propertyValue->audit($propertyName);
 
                 $this->validatedProperties[$propertyName] = $this->$propertyName;
 
@@ -91,7 +95,7 @@ abstract class CustomDataBase
             );
 
             // validate the property type
-            if ($shouldCheckDataType) $propertyValue->audit($propertyName);
+            if ($canAudit) $propertyValue->audit($propertyName);
 
             $this->validatedProperties[$propertyName] = $this->$propertyName;
         }
@@ -113,5 +117,14 @@ abstract class CustomDataBase
     public function shouldValidateProperties(): bool
     {
         return true;
+    }
+
+    /**
+     * Define whether the package should audit(process)
+     * class properties.
+     */
+    public function shouldAuditProperties(): bool
+    {
+        return $this->shouldValidateProperties();
     }
 }

@@ -161,7 +161,7 @@ trait HasCustomDataHelper
      */
     public function callFunction($myFunction, $throwableMsg = null, ...$args)
     {
-        if (is_callable($myFunction)) return $myFunction(...$args);
+        if (self::isCallable($myFunction)) return $myFunction(...$args);
 
         if ($throwableMsg)  $this->throwError($throwableMsg, UnCallableValueException::class);
 
@@ -185,7 +185,7 @@ trait HasCustomDataHelper
 
             if ($rules == []) continue;
 
-            $extractedRules[$property] = is_callable($rules) ? $rules($request) : $rules;
+            $extractedRules[$property] = CustomData::isCallable($rules) ? $rules($request) : $rules;
         }
 
         return $extractedRules;
@@ -204,7 +204,11 @@ trait HasCustomDataHelper
             }
         }
 
-        throw new $exceptionClassPath($msg);
+        $message = str_contains($msg, $class = get_class($this))
+            ? $msg
+            : $msg . ". Fix this in the: " . $class;
+
+        throw new $exceptionClassPath($message);
     }
 
     /**
@@ -236,34 +240,11 @@ trait HasCustomDataHelper
     }
 
     /**
-     * Convert a given custom data to its original
-     * representation(array)
+     * Check whether a provided callable is
+     * a closure and not a string
      */
-    protected function unserialize($data, $type = 'all'): array
+    public static function isCallable($callable)
     {
-        $payload = [];
-
-        foreach ($data as $propertyName => $value) {
-            $method = $type == 'all' ? 'unserializeAll' : 'onlyValidated';
-            $payload[$propertyName] = $value instanceof CustomData ? $value->$method() : $value;
-        }
-
-        return $payload;
-    }
-
-    /**
-     * convert all property payload to array
-     */
-    public function unserializeAll(): array
-    {
-        return $this->unserialize($this->all(), 'all');
-    }
-
-    /**
-     * convert validated property payload to array
-     */
-    public function unserializeValidated(): array
-    {
-        return $this->unserialize($this->onlyValidated(), 'validated');
+        return is_callable($callable) && gettype($callable) != 'string';
     }
 }
