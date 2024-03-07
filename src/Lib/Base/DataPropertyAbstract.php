@@ -39,12 +39,22 @@ abstract class DataPropertyAbstract
     public $rules;
 
     /**
+     * carry a function that cast a property to a given type
+     */
+    protected $cast = null;
+
+    /**
+     * property default value
+     */
+    public $default = null;
+
+    /**
      * validate a given property
      */
     abstract public function validate($propertyName);
 
     /**
-     * Audit a given property name of the inputed data
+     * Audit a given single property name of the inputed data
      */
     public function audit($propertyName)
     {
@@ -71,7 +81,7 @@ abstract class DataPropertyAbstract
     }
 
     /**
-     * Register an action task that will be executed after auditing 
+     * Register an action task that will be executed before auditing 
      * a property
      */
     protected function addBeforeAuditAction(callable $actionHandler)
@@ -93,24 +103,26 @@ abstract class DataPropertyAbstract
     }
 
     /**
-     * Execute all registered actions
+     * Execute all registered actions that need to be run before 
+     * auditing a single property
      */
     private function executeBeforeAuditActions()
     {
         foreach ($this->beforeAuditActions as $action) {
-            $action();
+            $action($this);
         }
 
         return $this;
     }
 
     /**
-     * Execute all registered actions
+     * Execute all registered actions that need to be run after 
+     * auditing a single property
      */
     private function executeAfterAuditActions()
     {
         foreach ($this->afterAuditActions as $action) {
-            $action();
+            $action($this);
         }
 
         return $this;
@@ -136,5 +148,21 @@ abstract class DataPropertyAbstract
     public function getRules()
     {
         return $this->rules;
+    }
+
+    /**
+     * Set a default value of the current property
+     */
+    public function default($default = null)
+    {
+        if ($default === null) return $this;
+
+        $this->default = $default;
+
+        $this->addBeforeAuditAction(function () {
+            $this->customData->get($this->propertyName, $this->default);
+        });
+
+        return $this;
     }
 }

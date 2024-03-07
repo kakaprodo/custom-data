@@ -204,7 +204,11 @@ trait HasCustomDataHelper
             }
         }
 
-        throw new $exceptionClassPath($msg);
+        $message = str_contains($msg, $class = get_class($this))
+            ? $msg
+            : $msg . ". Fix this in the: " . $class;
+
+        throw new $exceptionClassPath($message);
     }
 
     /**
@@ -233,37 +237,5 @@ trait HasCustomDataHelper
 
         $this->data = $newData;
         $this->validatedProperties = $newValidatedProperty;
-    }
-
-    /**
-     * Convert a given custom data to its original
-     * representation(array)
-     */
-    protected function unserialize($data, $type = 'all'): array
-    {
-        $payload = [];
-
-        foreach ($data as $propertyName => $value) {
-            $method = $type == 'all' ? 'unserializeAll' : 'onlyValidated';
-            $payload[$propertyName] = $value instanceof CustomData ? $value->$method() : $value;
-        }
-
-        return $payload;
-    }
-
-    /**
-     * convert all property payload to array
-     */
-    public function unserializeAll(): array
-    {
-        return $this->unserialize($this->all(), 'all');
-    }
-
-    /**
-     * convert validated property payload to array
-     */
-    public function unserializeValidated(): array
-    {
-        return $this->unserialize($this->onlyValidated(), 'validated');
     }
 }

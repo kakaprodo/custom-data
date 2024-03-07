@@ -19,9 +19,6 @@ class DataTypeHub extends DataTypeHubAbstract
         );
 
         $propertyValue = $this->castValue($this->customData->get($propertyName, $this->default));
-        // $selectedType = $this->selectedType;
-
-        //if (is_callable($selectedType)) return $selectedType($propertyValue, $this);
 
         $typeMatches = $this->checkTypeMatches($propertyValue, $this->selectedType);
 
