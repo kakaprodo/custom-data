@@ -70,14 +70,16 @@ abstract class DataPropertyAbstract
     }
 
     /**
-     * Grab the value of the current property.
+     * Grab the value of the current property it it exists,
+     * otherwise grab its default value
+     * 
      * Note: Available only during the property auditing
      */
     public function value()
     {
         $propertyName = $this->propertyName ?? 'nosignal_property';
 
-        return $this->customData->$propertyName;
+        return $this->customData->$propertyName ?? $this->default;
     }
 
     /**

@@ -3,6 +3,8 @@
 namespace Kakaprodo\CustomData\Lib\Property;
 
 use Illuminate\Support\Str;
+use Kakaprodo\CustomData\CustomData;
+use Illuminate\Database\Eloquent\Model;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 
 class DataProperty extends DataTypeHub
@@ -60,14 +62,53 @@ class DataProperty extends DataTypeHub
     }
 
     /**
-     * Transform property
+     * Transform the property name
+     * 
+     * @param string|closure $newPropertyName
      */
-    public function transform($newProperty)
+    public function transform($newPropertyName)
     {
-        $this->addAfterAuditAction(function () use ($newProperty) {
-            $this->customData->transformProperties[$this->propertyName] = is_callable($newProperty) ? $newProperty($this) : $newProperty;
+        $this->addAfterAuditAction(function () use ($newPropertyName) {
+            $this->customData->transformProperties[$this->propertyName] = $this->customData->callFunction(
+                $newPropertyName,
+                null,
+                $this
+            );
         });
 
         return $this;
+    }
+
+    /**
+     * transform property value to a new value
+     * 
+     * Note: this will happen after all the property auditing
+     * @param string|closure $newValue
+     */
+    public function castTo($newValue)
+    {
+        $this->addAfterAuditAction(function () use ($newValue) {
+
+            $propertyName = $this->propertyName;
+
+            $this->customData->$propertyName = CustomData::isCallable($newValue)
+                ? $newValue($this->value())
+                : $newValue;
+        });
+
+        return $this;
+    }
+
+    /**
+     * transform property value to a laravel Model instance
+     * 
+     * @param string $fullyClassName : the fully qualified class name of the model
+     * @param string? $column : a column to use for retrieving the 
+     */
+    public function castToModel(string $fullyClassName, string $column = 'id')
+    {
+        return $this->castTo(
+            fn () => $fullyClassName::where($column, $this->value())->first()
+        );
     }
 }

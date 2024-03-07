@@ -161,7 +161,7 @@ trait HasCustomDataHelper
      */
     public function callFunction($myFunction, $throwableMsg = null, ...$args)
     {
-        if (is_callable($myFunction)) return $myFunction(...$args);
+        if (self::isCallable($myFunction)) return $myFunction(...$args);
 
         if ($throwableMsg)  $this->throwError($throwableMsg, UnCallableValueException::class);
 
@@ -185,7 +185,7 @@ trait HasCustomDataHelper
 
             if ($rules == []) continue;
 
-            $extractedRules[$property] = is_callable($rules) ? $rules($request) : $rules;
+            $extractedRules[$property] = CustomData::isCallable($rules) ? $rules($request) : $rules;
         }
 
         return $extractedRules;
@@ -237,5 +237,14 @@ trait HasCustomDataHelper
 
         $this->data = $newData;
         $this->validatedProperties = $newValidatedProperty;
+    }
+
+    /**
+     * Check whether a provided callable is
+     * a closure and not a string
+     */
+    public static function isCallable($callable)
+    {
+        return is_callable($callable) && gettype($callable) != 'string';
     }
 }

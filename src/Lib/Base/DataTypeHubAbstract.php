@@ -2,6 +2,7 @@
 
 namespace Kakaprodo\CustomData\Lib\Base;
 
+use Kakaprodo\CustomData\CustomData;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
 use Kakaprodo\CustomData\Lib\Base\DataPropertyAbstract;
@@ -243,13 +244,13 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
         $this->addBeforeAuditAction(function () use ($property, $value) {
             if (!empty($this->value())) return;
 
-            $isRequired = is_callable($property) ?
+            $isRequired = CustomData::isCallable($property) ?
                 $property($this)
                 : ($this->customData->defaultValue($property) == $value);
 
             if (!$isRequired) return;
 
-            $errorMsg = !is_callable($property) ?
+            $errorMsg = CustomData::isCallable($property) ?
                 "The property {$this->propertyName} is required when the property {$property} is equal to :" . $value
                 : "The property {$this->propertyName} is required because of the provided statement";
 
