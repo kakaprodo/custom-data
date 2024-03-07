@@ -259,4 +259,21 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
 
         return $this;
     }
+
+    /**
+     * Change property name when a given statement is true
+     * 
+     * @param string|callable $statement
+     * @param string|callable $newType : any supported type
+     */
+    public function typeWhen($statement, $newType)
+    {
+        $this->addBeforeAuditAction(function () use ($statement, $newType) {
+            $canChangeType = $this->customData->callFunction($statement, null, $this);
+
+            if ($canChangeType) $this->selectedType = $newType;
+        });
+
+        return $this;
+    }
 }
