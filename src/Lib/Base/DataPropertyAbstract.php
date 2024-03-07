@@ -62,11 +62,19 @@ abstract class DataPropertyAbstract
 
         $this->executeBeforeAuditActions();
 
-        if ($this->selectedType) $this->validate($propertyName);
+        if ($this->canValidateProperty()) $this->validate($propertyName);
 
         $this->executeAfterAuditActions();
 
         return $this;
+    }
+
+    /**
+     * check if a property can be validated
+     */
+    private function canValidateProperty()
+    {
+        return $this->selectedType && $this->value();
     }
 
     /**

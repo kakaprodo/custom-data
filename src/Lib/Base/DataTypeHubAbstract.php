@@ -250,7 +250,7 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
 
             if (!$isRequired) return;
 
-            $errorMsg = CustomData::isCallable($property) ?
+            $errorMsg = !CustomData::isCallable($property) ?
                 "The property {$this->propertyName} is required when the property {$property} is equal to :" . $value
                 : "The property {$this->propertyName} is required because of the provided statement";
 
