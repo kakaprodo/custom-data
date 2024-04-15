@@ -2,8 +2,8 @@
 
 namespace Kakaprodo\CustomData\Exceptions;
 
-use Exception;
+use Kakaprodo\CustomData\Exceptions\Base\CustomDataException;
 
-class VirtualCustomDataFieldException extends Exception
+class VirtualCustomDataFieldException extends CustomDataException
 {
 }

@@ -2,8 +2,8 @@
 
 namespace Kakaprodo\CustomData\Exceptions;
 
-use Exception;
+use Kakaprodo\CustomData\Exceptions\Base\CustomDataException;
 
-class UnCallableValueException extends Exception
+class UnCallableValueException extends CustomDataException
 {
 }

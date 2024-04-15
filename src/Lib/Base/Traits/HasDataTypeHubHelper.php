@@ -96,7 +96,7 @@ trait HasDataTypeHubHelper
             self::DATA_STRING => fn () => is_string($value) || is_numeric($value),
             self::DATA_INT => fn () => is_integer($value),
             self::DATA_FLOAT => fn () => is_float($value),
-            self::DATA_BOOL => fn () => is_bool($value) || in_array($value, [0, 1]),
+            self::DATA_BOOL => fn () => is_bool($value) || in_array(intval($value), [0, 1], true),
             self::DATA_ARRAY => fn () => is_array($value) && $this->arrayItemsAreCompatible($value, $customType),
             self::DATA_OBJECT => fn () => is_object($value),
             self::DATA_NUMERIC => fn () => is_numeric($value),

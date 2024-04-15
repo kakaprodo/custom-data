@@ -191,7 +191,7 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
     public function inArray(array $items)
     {
         return $this->customValidator(function ($value) use ($items) {
-            if (in_array($value, $items)) return true;
+            if (in_array($value, $items, true)) return true;
 
             $errorMsg = "{$this->propertyName} should be one of: " . implode(',', $items);
             $errorMsg .= " but {$value} given";
@@ -218,7 +218,8 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
     {
         return !in_array(
             $selectedType ?? $this->selectedType,
-            static::$supportedbuiltInTypes
+            static::$supportedbuiltInTypes,
+            true
         );
     }
 
@@ -276,6 +277,27 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
                 null,
                 $this
             );
+        });
+
+        return $this;
+    }
+
+    /**
+     * Check whether the property value is an intance
+     * of one the provided classes
+     */
+    public function inInstanceOf(array $classes)
+    {
+        $this->addBeforeAuditAction(function () use ($classes) {
+            $value = $this->value();
+
+            foreach ($classes as $class) {
+                if ($value instanceof $class) continue;
+
+                $errorMsg = "The {$this->propertyName} property must be an instance of: " . implode(' or ', $classes);
+
+                $this->customData->throwError($this->errorMessage ?? $errorMsg, UnexpectedPropertyTypeException::class);
+            }
         });
 
         return $this;
