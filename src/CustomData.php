@@ -90,14 +90,6 @@ abstract class CustomData extends CustomDataBase
         return $default;
     }
 
-    /**
-     * All validated properties
-     */
-    public function onlyValidated(): array
-    {
-        return $this->validatedProperties;
-    }
-
     public function __toString()
     {
         return json_encode($this->unserializeValidated());

@@ -4,7 +4,7 @@ namespace Kakaprodo\CustomData\Lib;
 
 use Kakaprodo\CustomData\Helpers\Optional;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
-use Kakaprodo\CustomData\Traits\HasPropertyHelper;
+use Kakaprodo\CustomData\Traits\HasDataHelper;
 use Kakaprodo\CustomData\Lib\Property\DataProperty;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
@@ -13,7 +13,7 @@ abstract class CustomDataBase
 {
     use
         HasCustomDataHelper,
-        HasPropertyHelper;
+        HasDataHelper;
 
     /**
      * The properties that have been validated

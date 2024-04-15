@@ -6,7 +6,7 @@ use Illuminate\Support\Arr;
 use Kakaprodo\CustomData\CustomData;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 
-trait HasPropertyHelper
+trait HasDataHelper
 {
     /**
      * Grab only some properties form the customData
@@ -55,7 +55,9 @@ trait HasPropertyHelper
      */
     public function defaultValue($propertyName)
     {
-        if (!empty($this->$propertyName)) return $this->$propertyName;
+        $providedValue = $this->$propertyName;
+
+        if (!empty($providedValue)) return  $providedValue;
 
         $propertyValue =  $this->expectedProperties()[$propertyName] ?? null;
 
@@ -80,5 +82,21 @@ trait HasPropertyHelper
         $originalValue = 'original_' . $propertyName;
 
         return $this->$originalValue;
+    }
+
+    /**
+     * All validated properties
+     */
+    public function onlyValidated(): array
+    {
+        return $this->validatedProperties;
+    }
+
+    /**
+     * Get all the payload except some properties
+     */
+    public function except(array $keys = []): array
+    {
+        return Arr::except($this->all(), $keys);
     }
 }
