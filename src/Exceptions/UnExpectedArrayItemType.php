@@ -2,8 +2,8 @@
 
 namespace Kakaprodo\CustomData\Exceptions;
 
-use Exception;
+use Kakaprodo\CustomData\Exceptions\Base\CustomDataException;
 
-class UnExpectedArrayItemType extends Exception
+class UnExpectedArrayItemType extends CustomDataException
 {
 }

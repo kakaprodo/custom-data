@@ -2,8 +2,8 @@
 
 namespace Kakaprodo\CustomData\Exceptions;
 
-use Exception;
+use Kakaprodo\CustomData\Exceptions\Base\CustomDataException;
 
-class ActionWithNonCustomDataArgumentException extends Exception
+class ActionWithNonCustomDataArgumentException extends CustomDataException
 {
 }

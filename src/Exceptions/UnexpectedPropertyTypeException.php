@@ -2,8 +2,8 @@
 
 namespace Kakaprodo\CustomData\Exceptions;
 
-use Exception;
+use Kakaprodo\CustomData\Exceptions\Base\CustomDataException;
 
-class UnexpectedPropertyTypeException extends Exception
+class UnexpectedPropertyTypeException extends CustomDataException
 {
 }

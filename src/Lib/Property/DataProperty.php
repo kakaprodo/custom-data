@@ -105,7 +105,7 @@ class DataProperty extends DataTypeHub
      * transform property value to a laravel Model instance
      * 
      * @param string $fullyClassName : the fully qualified class name of the model
-     * @param string? $column : a column to use for retrieving the 
+     * @param string? $column : a column to use for retrieving the model record
      */
     public function castToModel(string $fullyClassName, string $column = 'id')
     {
