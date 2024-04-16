@@ -3,11 +3,13 @@
 namespace Kakaprodo\CustomData\Lib\Base\Traits;
 
 use Exception;
-use ReflectionClass;
 use Kakaprodo\CustomData\CustomData;
 use Kakaprodo\CustomData\Exceptions\UnExpectedArrayItemType;
 
 
+/**
+ * @property CustomData $customData
+ */
 trait HasDataTypeHubHelper
 {
     /**
@@ -57,33 +59,9 @@ trait HasDataTypeHubHelper
     {
         if (($value instanceof CustomData) || !is_array($value)) return $value;
 
-        if (!class_exists($type)) return $value;
-
-        $getTopParent = $this->getTopmostParentClassName($type, CustomData::class);
-
-        if ($getTopParent != CustomData::class) return $value;
+        if (!CustomData::isCustomDataChild($type)) return $value;
 
         return $type::make($value);
-    }
-
-    /**
-     * Get the latest parent of a given class until to find
-     * the provided parentClassToSearch
-     */
-    private function getTopmostParentClassName($className, $parentClassToSearch = null)
-    {
-        $reflectionClass = new ReflectionClass($className);
-        $stopSearching = false;
-
-        while ((($reflectionParentClass = $reflectionClass->getParentClass()) && !$stopSearching)) {
-            $reflectionClass = $reflectionParentClass;
-
-            if ($reflectionClass->getName() == $parentClassToSearch) {
-                $stopSearching = true;
-            }
-        }
-
-        return $reflectionClass->getName();
     }
 
 

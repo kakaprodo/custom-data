@@ -36,7 +36,7 @@ abstract class DataPropertyAbstract
      * 
      * @var callable|array
      */
-    public $rules;
+    public $rules = [];
 
     /**
      * carry a function that cast a property to a given type
@@ -158,6 +158,14 @@ abstract class DataPropertyAbstract
     public function getRules()
     {
         return $this->rules;
+    }
+
+    /**
+     * Get the type of the property
+     */
+    public function getType()
+    {
+        return $this->selectedType;
     }
 
     /**
