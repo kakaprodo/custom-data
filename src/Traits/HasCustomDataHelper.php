@@ -3,6 +3,7 @@
 namespace Kakaprodo\CustomData\Traits;
 
 use Exception;
+use ReflectionClass;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Kakaprodo\CustomData\CustomData;
@@ -181,11 +182,25 @@ trait HasCustomDataHelper
         foreach ($fields as $key => $value) {
             $property = str_replace('?', '', is_numeric($key) ? $value : $key);
 
-            $rules = $value instanceof DataTypeHub ? $value->getRules() : [];
+            if (!($value instanceof DataTypeHub)) continue;
 
-            if ($rules == []) continue;
+            $rules =  $value->getRules();
 
-            $extractedRules[$property] = CustomData::isCallable($rules) ? $rules($request) : $rules;
+            if (count($rules) == 0) continue;
+
+            $extractedRules[$property] = self::isCallable($rules) ? $rules($request) : $rules;
+
+            // Process simple nested rules
+            if (!self::isCustomDataChild($nestedChild = $value->getType())) continue;
+
+            $nestedRules = $nestedChild::formValidationRules($request);
+
+            if (count($nestedRules) == 0) continue;
+
+            foreach ($nestedRules as $nestedProperty => $rules) {
+                if (count($rules) == 0) continue 2;
+                $extractedRules["$property.$nestedProperty"] = self::isCallable($rules) ? $rules($request) : $rules;
+            }
         }
 
         return $extractedRules;
@@ -246,5 +261,39 @@ trait HasCustomDataHelper
     public static function isCallable($callable)
     {
         return is_callable($callable) && gettype($callable) != 'string';
+    }
+
+    /**
+     * Get the latest parent of a given class until to find
+     * the provided parentClassToSearch
+     */
+    public static function getTopMostParentClassName($className, $parentClassToSearch = null)
+    {
+        $reflectionClass = new ReflectionClass($className);
+        $stopSearching = false;
+
+        while ((($reflectionParentClass = $reflectionClass->getParentClass()) && !$stopSearching)) {
+            $reflectionClass = $reflectionParentClass;
+
+            if ($reflectionClass->getName() == $parentClassToSearch) {
+                $stopSearching = true;
+            }
+        }
+
+        return $reflectionClass->getName();
+    }
+
+    /**
+     * check if a a given class is a CustomData child
+     */
+    public static function isCustomDataChild($className)
+    {
+        if (!is_string($className)) return false;
+
+        if (!class_exists($className)) return false;
+
+        $topParent = self::getTopMostParentClassName($className, CustomData::class);
+
+        return $topParent == CustomData::class;
     }
 }
