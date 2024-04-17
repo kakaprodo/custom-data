@@ -3,17 +3,19 @@
 namespace Kakaprodo\CustomData\Lib;
 
 use Kakaprodo\CustomData\Helpers\Optional;
-use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 use Kakaprodo\CustomData\Traits\HasDataHelper;
+use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 use Kakaprodo\CustomData\Lib\Property\DataProperty;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
+use Kakaprodo\CustomData\Traits\HasDataValidationHelper;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 
 abstract class CustomDataBase
 {
     use
         HasCustomDataHelper,
-        HasDataHelper;
+        HasDataHelper,
+        HasDataValidationHelper;
 
     /**
      * The properties that have been validated
@@ -66,12 +68,12 @@ abstract class CustomDataBase
          */
         foreach ($this->expectedProperties() as $propertyName => $propertyValue) {
 
-
             // get the property the way it is with a ? at the end
             $unSinitizePropertyName = is_numeric($propertyName) ? $propertyValue : $propertyName;
 
-            // remove the ? symbol from the name
             $propertyName = $this->replaceLast('?', '', $unSinitizePropertyName);
+
+            $this->throwWhenMagic($propertyName);
 
             $canAudit = ($propertyValue instanceof DataTypeHub);
 

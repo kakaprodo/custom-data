@@ -6,6 +6,9 @@ use Illuminate\Support\Arr;
 use Kakaprodo\CustomData\CustomData;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 
+/**
+ * Where to define the way to access to data 
+ */
 trait HasDataHelper
 {
     /**
