@@ -12,6 +12,9 @@ use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
 use Kakaprodo\CustomData\Exceptions\UnCallableValueException;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
 
+/**
+ * Define general helper methods
+ */
 trait HasCustomDataHelper
 {
     /**
@@ -211,17 +214,17 @@ trait HasCustomDataHelper
      */
     public function throwError($msg, $exceptionClassPath)
     {
+        $message = str_contains($msg, $class = get_class($this))
+        ? $msg
+        : $msg . ". Fix this in the: " . $class;
+
         if (method_exists($this, 'customErrorHandling')) {
             try {
-                throw new $exceptionClassPath($msg);
+                throw new $exceptionClassPath($message);
             } catch (\Throwable $th) {
-                return $this->customErrorHandling($msg, $th);
+                return $this->customErrorHandling($message, $th);
             }
         }
-
-        $message = str_contains($msg, $class = get_class($this))
-            ? $msg
-            : $msg . ". Fix this in the: " . $class;
 
         throw new $exceptionClassPath($message);
     }
