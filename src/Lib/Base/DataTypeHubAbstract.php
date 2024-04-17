@@ -302,4 +302,16 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
 
         return $this;
     }
+
+    /**
+     * add the current property to a given group
+     */
+    public function wrap(string $groupName)
+    {
+        $this->addAfterAuditAction(
+            fn () => $this->customData->wrapper()->add($groupName, $this->propertyName)
+        );
+
+        return $this;
+    }
 }

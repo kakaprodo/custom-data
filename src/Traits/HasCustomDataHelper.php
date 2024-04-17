@@ -103,7 +103,7 @@ trait HasCustomDataHelper
 
         $keyString = [];
 
-        foreach ($this->validatedProperties as $property => $value) {
+        foreach ($this->onlyValidated() as $property => $value) {
 
             if (in_array($property, $this->ignoreForKeyGenerator())) continue;
 
@@ -215,8 +215,8 @@ trait HasCustomDataHelper
     public function throwError($msg, $exceptionClassPath)
     {
         $message = str_contains($msg, $class = get_class($this))
-        ? $msg
-        : $msg . ". Fix this in the: " . $class;
+            ? $msg
+            : $msg . ". Fix this in the: " . $class;
 
         if (method_exists($this, 'customErrorHandling')) {
             try {
@@ -239,22 +239,22 @@ trait HasCustomDataHelper
         if ($this->transformProperties == []) return;
 
         $newData = [];
-        $newValidatedProperty = [];
+        $newValidatedProperties = [];
         $propertyToTransform = $this->transformProperties;
 
         foreach ($this->data as $key => $value) {
             $newKey = $propertyToTransform[$key] ?? $key;
             $newData[$newKey] = $value;
 
-            $keyIsValidated = isset($this->validatedProperties[$key]);
+            $keyIsValidated = in_array($key, $this->validatedProperties, true);
 
             if ($keyIsValidated) {
-                $newValidatedProperty[$newKey] = $value;
+                $newValidatedProperties[] = $newKey;
             }
         }
 
         $this->data = $newData;
-        $this->validatedProperties = $newValidatedProperty;
+        $this->validatedProperties = $newValidatedProperties;
     }
 
     /**

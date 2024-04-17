@@ -11,6 +11,15 @@ use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
  */
 trait HasDataHelper
 {
+
+    /**
+     * All data passed to the class
+     */
+    public function all(): array
+    {
+        return $this->data;
+    }
+
     /**
      * Grab only some properties form the customData
      */
@@ -20,10 +29,25 @@ trait HasDataHelper
     }
 
     /**
+     * get a given property with the ability to pass
+     * a default in case the property is not defined
+     */
+    public function get($property, $default = null)
+    {
+        $value = $this->{$property};
+
+        if (isset($value) || $default === null) return $value;
+
+        $this->{$property} = $default;
+
+        return $default;
+    }
+
+    /**
      * Convert a given custom data to its original
      * representation(array)
      */
-    protected function unserialize($data, $type = 'all'): array
+    public function unserialize($data, $type = 'all'): array
     {
         $payload = [];
 
@@ -92,7 +116,7 @@ trait HasDataHelper
      */
     public function onlyValidated(): array
     {
-        return $this->validatedProperties;
+        return Arr::only($this->all(), $this->validatedProperties);
     }
 
     /**

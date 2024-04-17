@@ -9,6 +9,7 @@ use Kakaprodo\CustomData\Lib\Property\DataProperty;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 use Kakaprodo\CustomData\Traits\HasDataValidationHelper;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
+use Kakaprodo\CustomData\Helpers\Wrapper;
 
 abstract class CustomDataBase
 {
@@ -16,6 +17,12 @@ abstract class CustomDataBase
         HasCustomDataHelper,
         HasDataHelper,
         HasDataValidationHelper;
+
+    /**
+     * kept incoming data and data that will be
+     * set at runtime
+     */
+    protected array $data = [];
 
     /**
      * The properties that have been validated
@@ -26,6 +33,11 @@ abstract class CustomDataBase
      * Mapping array of properties name transformation
      */
     public $transformProperties = [];
+
+    /**
+     * Use to group properties
+     */
+    public $customWrapper = [];
 
     /**
      * Required  class properties 
@@ -54,6 +66,27 @@ abstract class CustomDataBase
     public function optional($object)
     {
         return new Optional($object);
+    }
+
+    /**
+     * Property grouping gate
+     */
+    public function wrapper(): Wrapper
+    {
+        return new Wrapper($this);
+    }
+
+    /**
+     * add a given property among the validted ones,if
+     * not yet among them
+     */
+    public function setValidatedProperty($property)
+    {
+        if (in_array($property, $this->validatedProperties, true)) return $this;
+
+        $this->validatedProperties[] = $property;
+
+        return $this;
     }
 
     /**
@@ -86,7 +119,7 @@ abstract class CustomDataBase
             if ($this->strEndsWith($unSinitizePropertyName, '?')) {
                 if ($canAudit) $propertyValue->audit($propertyName);
 
-                $this->validatedProperties[$propertyName] = $this->$propertyName;
+                $this->setValidatedProperty($propertyName);
 
                 continue;
             }
@@ -99,7 +132,7 @@ abstract class CustomDataBase
             // validate the property type
             if ($canAudit) $propertyValue->audit($propertyName);
 
-            $this->validatedProperties[$propertyName] = $this->$propertyName;
+            $this->setValidatedProperty($propertyName);
         }
     }
 
