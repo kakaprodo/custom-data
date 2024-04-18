@@ -59,12 +59,9 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
     {
         $this->customData = &$customData;
         $this->selectedType = $type;
-    }
 
-    /**
-     * validate a given property of the custom data
-     */
-    abstract public function validate($propertyName);
+        $this->validatePropertyNature();
+    }
 
     /**
      * define that a property is a number
@@ -251,6 +248,8 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
 
             if (!$isRequired) return;
 
+            $value = is_bool($value) ? ((string) $value) : $value;
+
             $errorMsg = !CustomData::isCallable($property) ?
                 "The property {$this->propertyName} is required when the property {$property} is equal to :" . $value
                 : "The property {$this->propertyName} is required because of the provided statement";
@@ -288,7 +287,7 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
      */
     public function inInstanceOf(array $classes)
     {
-        $this->addBeforeAuditAction(function () use ($classes) {
+        return $this->customValidator(function () use ($classes) {
             $value = $this->value();
 
             foreach ($classes as $class) {
@@ -296,8 +295,35 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
 
                 $errorMsg = "The {$this->propertyName} property must be an instance of: " . implode(' or ', $classes);
 
-                $this->customData->throwError($this->errorMessage ?? $errorMsg, UnexpectedPropertyTypeException::class);
+                $this->customData->throwError(
+                    $this->errorMessage ?? $errorMsg,
+                    UnexpectedPropertyTypeException::class
+                );
             }
+
+            return true;
+        });
+    }
+
+    /**
+     * Check if property is required then validate it accondingly
+     * Note: this will be the first event to call before the property
+     *       audit
+     */
+    protected function validatePropertyNature()
+    {
+        $this->addBeforeAuditAction(function () {
+
+            if ($this->propertyNature != self::PROPERTY_NATURE_REQUIRED) return;
+
+            $propertyValue = $this->customData->get($this->propertyName, $this->default);
+
+            $error = "The property {$this->propertyName} is required on the class " . get_class($this->customData);
+
+            if ($propertyValue === null) $this->customData->throwError(
+                $this->errorMessage ?? $error,
+                MissedRequiredPropertyException::class
+            );
         });
 
         return $this;

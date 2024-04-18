@@ -3,6 +3,7 @@
 namespace Kakaprodo\CustomData\Lib\Base;
 
 use Kakaprodo\CustomData\Lib\CustomDataBase;
+use Kakaprodo\CustomData\Lib\Property\DataProperty;
 
 abstract class DataPropertyAbstract
 {
@@ -49,6 +50,31 @@ abstract class DataPropertyAbstract
     public $default = null;
 
     /**
+     * The basic nature of a property
+     */
+    const PROPERTY_NATURE_REQUIRED = "required";
+    const PROPERTY_NATURE_OPTIONAL = "optional";
+
+    /**
+     * Action Group Name
+     */
+    const ACTION_GENERAL = 'GENERAL';
+    const ACTION_WRAPPER = 'WRAPPER';
+
+    /**
+     * the lifecycle of action execution
+     */
+    static $eventExecutionOrders = [
+        self::ACTION_GENERAL,
+        self::ACTION_WRAPPER
+    ];
+
+    /**
+     * which defines whether a property is optional or required
+     */
+    protected $propertyNature = null;
+
+    /**
      * validate a given property
      */
     abstract public function validate($propertyName);
@@ -56,15 +82,20 @@ abstract class DataPropertyAbstract
     /**
      * Audit a given single property name of the inputed data
      */
-    public function audit($propertyName)
+    public function audit($propertyName, $isOptional = false)
     {
         $this->propertyName = $propertyName;
+        $this->propertyNature = $isOptional
+            ? self::PROPERTY_NATURE_OPTIONAL
+            : self::PROPERTY_NATURE_REQUIRED;
 
         $this->executeBeforeAuditActions();
 
         if ($this->canValidateProperty()) $this->validate($propertyName);
 
         $this->executeAfterAuditActions();
+
+        $this->registerToValidation();
 
         return $this;
     }
@@ -74,18 +105,29 @@ abstract class DataPropertyAbstract
      */
     private function canValidateProperty()
     {
-        return $this->selectedType && $this->value();
+        if ($this instanceof DataProperty) {
+            return $this->selectedType && $this->value() !== null;
+        }
+
+        if ($this->propertyNature == self::PROPERTY_NATURE_OPTIONAL) {
+            return $this->value() !== null;
+        }
+
+        // for required properties
+        return true;
     }
 
     /**
-     * Grab the value of the current property it it exists,
+     * Grab the value of the current property if it exists,
      * otherwise grab its default value
      * 
      * Note: Available only during the property auditing
      */
     public function value()
     {
-        $propertyName = $this->propertyName ?? 'nosignal_property';
+        $propertyName = $this->propertyName;
+
+        if (!$propertyName) return $this->default;
 
         return $this->customData->$propertyName ?? $this->default;
     }
@@ -94,9 +136,9 @@ abstract class DataPropertyAbstract
      * Register an action task that will be executed before auditing 
      * a property
      */
-    protected function addBeforeAuditAction(callable $actionHandler)
+    protected function addBeforeAuditAction(callable $actionHandler, string $groupAction = null)
     {
-        $this->beforeAuditActions[] = $actionHandler;
+        $this->beforeAuditActions[$groupAction ?? self::ACTION_GENERAL][] = $actionHandler;
 
         return $this;
     }
@@ -105,9 +147,9 @@ abstract class DataPropertyAbstract
      * Register an action task that will be executed after auditing 
      * a property
      */
-    protected function addAfterAuditAction(callable $actionHandler)
+    protected function addAfterAuditAction(callable $actionHandler, string $groupAction = null)
     {
-        $this->afterAuditActions[] = $actionHandler;
+        $this->afterAuditActions[$groupAction ?? self::ACTION_GENERAL][] = $actionHandler;
 
         return $this;
     }
@@ -118,8 +160,10 @@ abstract class DataPropertyAbstract
      */
     private function executeBeforeAuditActions()
     {
-        foreach ($this->beforeAuditActions as $action) {
-            $action($this);
+        foreach (static::$eventExecutionOrders as $groupActionName) {
+            foreach (($this->beforeAuditActions[$groupActionName] ?? []) as $action) {
+                $action($this);
+            }
         }
 
         return $this;
@@ -131,8 +175,10 @@ abstract class DataPropertyAbstract
      */
     private function executeAfterAuditActions()
     {
-        foreach ($this->afterAuditActions as $action) {
-            $action($this);
+        foreach (static::$eventExecutionOrders as $groupActionName) {
+            foreach (($this->afterAuditActions[$groupActionName] ?? []) as $action) {
+                $action($this);
+            }
         }
 
         return $this;
@@ -182,5 +228,14 @@ abstract class DataPropertyAbstract
         });
 
         return $this;
+    }
+
+    /**
+     * add the current property among the valiadated
+     * ones
+     */
+    private function registerToValidation()
+    {
+        $this->customData->setValidatedProperty($this->propertyName);
     }
 }

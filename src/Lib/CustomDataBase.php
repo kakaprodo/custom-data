@@ -9,6 +9,7 @@ use Kakaprodo\CustomData\Lib\Property\DataProperty;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 use Kakaprodo\CustomData\Traits\HasDataValidationHelper;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
+use Kakaprodo\CustomData\Helpers\Wrapper;
 
 abstract class CustomDataBase
 {
@@ -16,6 +17,12 @@ abstract class CustomDataBase
         HasCustomDataHelper,
         HasDataHelper,
         HasDataValidationHelper;
+
+    /**
+     * kept incoming data and data that will be
+     * set at runtime
+     */
+    protected array $data = [];
 
     /**
      * The properties that have been validated
@@ -26,6 +33,11 @@ abstract class CustomDataBase
      * Mapping array of properties name transformation
      */
     public $transformProperties = [];
+
+    /**
+     * Use to group properties
+     */
+    public $customWrapper = [];
 
     /**
      * Required  class properties 
@@ -57,6 +69,33 @@ abstract class CustomDataBase
     }
 
     /**
+     * Property grouping gate
+     * 
+     * @return Wrapper | array
+     */
+    public function wrapper(string $groupName = null)
+    {
+        $wrapper = new Wrapper($this);
+
+        if ($groupName) return  $wrapper->get($groupName);
+
+        return $wrapper;
+    }
+
+    /**
+     * add a given property among the validted ones,if
+     * not yet among them
+     */
+    public function setValidatedProperty($property)
+    {
+        if (in_array($property, $this->validatedProperties, true)) return $this;
+
+        $this->validatedProperties[] = $property;
+
+        return $this;
+    }
+
+    /**
      * Validatee properties
      */
     protected function validateRequiredProperties()
@@ -75,31 +114,14 @@ abstract class CustomDataBase
 
             $this->throwWhenMagic($propertyName);
 
-            $canAudit = ($propertyValue instanceof DataTypeHub);
+            $propertyValue = ($propertyValue instanceof DataTypeHub)
+                ? $propertyValue
+                : $this->property();
 
-            $valueForRequiredValidation = $this->get(
+            $propertyValue->audit(
                 $propertyName,
-                $canAudit ? $propertyValue->default : null
+                $this->strEndsWith($unSinitizePropertyName, '?')
             );
-
-            // if a property is optional
-            if ($this->strEndsWith($unSinitizePropertyName, '?')) {
-                if ($canAudit) $propertyValue->audit($propertyName);
-
-                $this->validatedProperties[$propertyName] = $this->$propertyName;
-
-                continue;
-            }
-
-            if ($valueForRequiredValidation === null) $this->throwError(
-                $this->optional($propertyValue)->errorMessage ?? "The property {$propertyName} is required on the class " . static::class,
-                MissedRequiredPropertyException::class
-            );
-
-            // validate the property type
-            if ($canAudit) $propertyValue->audit($propertyName);
-
-            $this->validatedProperties[$propertyName] = $this->$propertyName;
         }
     }
 

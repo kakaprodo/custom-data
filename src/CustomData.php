@@ -7,12 +7,6 @@ use Kakaprodo\CustomData\Lib\CustomDataBase;
 
 abstract class CustomData extends CustomDataBase
 {
-    /**
-     * kept incoming data and data that will be
-     * set at runtime
-     */
-    protected array $data = [];
-
     public function __construct(array $data = [])
     {
         $this->data = $data;
@@ -36,7 +30,7 @@ abstract class CustomData extends CustomDataBase
     {
         $this->validateRequiredProperties();
 
-        $this->propertyNameTransformation();
+        $this->propertyNameTransformation(); // this will transform only unValidated properties
 
         if ($beforeBoot) $beforeBoot($this);
 
@@ -57,14 +51,6 @@ abstract class CustomData extends CustomDataBase
     {
     }
 
-    /**
-     * All data passed to the class
-     */
-    public function all(): array
-    {
-        return $this->data;
-    }
-
     public function __get($name)
     {
         return $this->data[$name] ?? null;
@@ -73,21 +59,6 @@ abstract class CustomData extends CustomDataBase
     public function __set($name, $value)
     {
         return $this->data[str_replace('?', '', $name)] = $value;
-    }
-
-    /**
-     * get a given property with the ability to pass
-     * a default in case the property is not defined
-     */
-    public function get($property, $default = null)
-    {
-        $value = $this->{$property};
-
-        if (isset($value) || $default === null) return $value;
-
-        $this->{$property} = $default;
-
-        return $default;
     }
 
     public function __toString()
