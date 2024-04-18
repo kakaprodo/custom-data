@@ -18,7 +18,9 @@ trait HasDataValidationHelper
         $magicProperties = [
             'data',
             'validatedProperties',
-            'transformProperties'
+            'transformProperties',
+            'customWrapper',
+            'uniqueCustomDataKey'
         ];
 
         return in_array($propertyName, $magicProperties, true);

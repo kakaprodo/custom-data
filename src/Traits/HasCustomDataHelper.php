@@ -216,7 +216,7 @@ trait HasCustomDataHelper
     {
         $message = str_contains($msg, $class = get_class($this))
             ? $msg
-            : $msg . ". Fix this in the: " . $class;
+            : $msg . ". Fix the issue in the: {$class} class";
 
         if (method_exists($this, 'customErrorHandling')) {
             try {
@@ -231,30 +231,26 @@ trait HasCustomDataHelper
 
     /**
      * Transform the name of properties
+     * eg: from PascalCase to snake_case
      * 
-     * eg: form PascalCase to snake_case
+     * @param array transformProperties : associated array of proerty to transofmr
      */
-    protected function propertyNameTransformation()
+    public function propertyNameTransformation(array $transformProperties = [])
     {
-        if ($this->transformProperties == []) return;
+        $transformProperties = count($transformProperties)
+            ?  $transformProperties
+            : $this->transformProperties;
 
-        $newData = [];
-        $newValidatedProperties = [];
-        $propertyToTransform = $this->transformProperties;
+        if (count($transformProperties) == 0) return;
 
-        foreach ($this->data as $key => $value) {
-            $newKey = $propertyToTransform[$key] ?? $key;
-            $newData[$newKey] = $value;
+        foreach ($transformProperties as $currentName => $newName) {
+            $propertyValue = $this->data[$currentName] ?? null;
 
-            $keyIsValidated = in_array($key, $this->validatedProperties, true);
+            if (!$propertyValue) continue;
 
-            if ($keyIsValidated) {
-                $newValidatedProperties[] = $newKey;
-            }
+            $this->data[$newName] =  $propertyValue;
+            unset($this->data[$currentName]);
         }
-
-        $this->data = $newData;
-        $this->validatedProperties = $newValidatedProperties;
     }
 
     /**

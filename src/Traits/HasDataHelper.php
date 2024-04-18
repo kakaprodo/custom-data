@@ -52,7 +52,7 @@ trait HasDataHelper
         $payload = [];
 
         foreach ($data as $propertyName => $value) {
-            $method = $type == 'all' ? 'unserializeAll' : 'onlyValidated';
+            $method = $type == 'all' ? 'unserializeAll' : 'unserializeValidated';
             $payload[$propertyName] = $value instanceof CustomData ? $value->$method() : $value;
         }
 

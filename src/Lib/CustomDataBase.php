@@ -70,10 +70,16 @@ abstract class CustomDataBase
 
     /**
      * Property grouping gate
+     * 
+     * @return Wrapper | array
      */
-    public function wrapper(): Wrapper
+    public function wrapper(string $groupName = null)
     {
-        return new Wrapper($this);
+        $wrapper = new Wrapper($this);
+
+        if ($groupName) return  $wrapper->get($groupName);
+
+        return $wrapper;
     }
 
     /**
@@ -108,31 +114,14 @@ abstract class CustomDataBase
 
             $this->throwWhenMagic($propertyName);
 
-            $canAudit = ($propertyValue instanceof DataTypeHub);
+            $propertyValue = ($propertyValue instanceof DataTypeHub)
+                ? $propertyValue
+                : $this->property();
 
-            $valueForRequiredValidation = $this->get(
+            $propertyValue->audit(
                 $propertyName,
-                $canAudit ? $propertyValue->default : null
+                $this->strEndsWith($unSinitizePropertyName, '?')
             );
-
-            // if a property is optional
-            if ($this->strEndsWith($unSinitizePropertyName, '?')) {
-                if ($canAudit) $propertyValue->audit($propertyName);
-
-                $this->setValidatedProperty($propertyName);
-
-                continue;
-            }
-
-            if ($valueForRequiredValidation === null) $this->throwError(
-                $this->optional($propertyValue)->errorMessage ?? "The property {$propertyName} is required on the class " . static::class,
-                MissedRequiredPropertyException::class
-            );
-
-            // validate the property type
-            if ($canAudit) $propertyValue->audit($propertyName);
-
-            $this->setValidatedProperty($propertyName);
         }
     }
 

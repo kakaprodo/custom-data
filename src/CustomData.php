@@ -30,7 +30,7 @@ abstract class CustomData extends CustomDataBase
     {
         $this->validateRequiredProperties();
 
-        $this->propertyNameTransformation();
+        $this->propertyNameTransformation(); // this will transform only unValidated properties
 
         if ($beforeBoot) $beforeBoot($this);
 

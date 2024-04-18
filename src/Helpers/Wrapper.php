@@ -15,9 +15,24 @@ class Wrapper
      */
     protected $customData;
 
+    /**
+     * define type of data to return when 
+     * accessing wrappers
+     */
+    protected $unserializeType = "all"; // or validated
+
     public function __construct(CustomData &$customData)
     {
         $this->customData = &$customData;
+    }
+
+    /**
+     * Mention only validated property should be returned
+     */
+    public function onlyValidated()
+    {
+        $this->unserializeType = "validated";
+        return $this;
     }
 
     /**
@@ -39,6 +54,20 @@ class Wrapper
 
         $properties =  Arr::only($this->customData->all(), $wrappedProperties);
 
-        return $this->customData->unserialize($properties, 'all');
+        return $this->customData->unserialize($properties, $this->unserializeType);
+    }
+
+    /**
+     * Get all wrappers and maintain their corresponding name
+     */
+    public function all(): array
+    {
+        $allWrappers = [];
+
+        foreach ($this->customData->customWrapper as $wrapperName => $properties) {
+            $allWrappers[$wrapperName] = $this->get($wrapperName);
+        }
+
+        return  $allWrappers;
     }
 }

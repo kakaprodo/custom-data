@@ -8,7 +8,9 @@ class {class_name} extends CustomData
 {
     protected function expectedProperties(): array
     {
-        return [];
+        return [
+            'property_name' => $this->property()
+        ];
     }
 
     public function boot()

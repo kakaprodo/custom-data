@@ -2,8 +2,8 @@
 
 namespace Kakaprodo\CustomData\Lib\TypeHub;
 
-use Exception;
 use Kakaprodo\CustomData\Lib\Base\DataTypeHubAbstract;
+use Kakaprodo\CustomData\Exceptions\MissingDataTypeException;
 use Kakaprodo\CustomData\Exceptions\UnexpectedPropertyTypeException;
 
 class DataTypeHub extends DataTypeHubAbstract
@@ -14,8 +14,9 @@ class DataTypeHub extends DataTypeHubAbstract
     public function validate($propertyName)
     {
         if (!$this->selectedType) $this->customData->throwError(
-            "No data type was defined for the property {$propertyName} ",
-            Exception::class
+            // an another msg will appended to this
+            'No data type was defined for the property ' . $propertyName . ', you can use $this->property() Or',
+            MissingDataTypeException::class
         );
 
         $propertyValue = $this->castValue($this->customData->get($propertyName, $this->default));
