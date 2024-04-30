@@ -188,10 +188,11 @@ trait HasCustomDataHelper
             if (!($value instanceof DataTypeHub)) continue;
 
             $rules =  $value->getRules();
+            $rules = self::isCallable($rules) ? $rules($request) : $rules;
 
             if (count($rules) == 0) continue;
 
-            $extractedRules[$property] = self::isCallable($rules) ? $rules($request) : $rules;
+            $extractedRules[$property] = $rules;
 
             // Process simple nested rules
             if (!self::isCustomDataChild($nestedChild = $value->getType())) continue;
@@ -201,8 +202,9 @@ trait HasCustomDataHelper
             if (count($nestedRules) == 0) continue;
 
             foreach ($nestedRules as $nestedProperty => $rules) {
+                $rules = self::isCallable($rules) ? $rules($request) : $rules;
                 if (count($rules) == 0) continue 2;
-                $extractedRules["$property.$nestedProperty"] = self::isCallable($rules) ? $rules($request) : $rules;
+                $extractedRules["$property.$nestedProperty"] = $rules;
             }
         }
 
