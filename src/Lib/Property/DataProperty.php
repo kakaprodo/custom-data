@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use Kakaprodo\CustomData\CustomData;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
+use Kakaprodo\CustomData\Exceptions\CastModelNotFoundException;
 
 class DataProperty extends DataTypeHub
 {
@@ -137,12 +138,22 @@ class DataProperty extends DataTypeHub
      * @param string $fullyClassName : the fully qualified class name of the model
      * @param string? $column : a column to use for retrieving the model record
      */
-    public function castToModel(string $fullyClassName, string $column = 'id')
-    {
-        return $this->castTo(function () use ($fullyClassName, $column) {
+    public function castToModel(
+        string $fullyClassName,
+        string $column = 'id',
+        string $errorMessage = null
+    ) {
+        return $this->castTo(function () use ($fullyClassName, $column, $errorMessage) {
             if (!($value = $this->value())) return;
 
-            return $fullyClassName::where($column, $value)->first();
+            $model =  $fullyClassName::where($column, $value)->first();
+
+            if (!$model && $errorMessage) $this->customData->throwError(
+                $errorMessage,
+                CastModelNotFoundException::class
+            );
+
+            return $model;
         });
     }
 
