@@ -288,20 +288,23 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
     public function inInstanceOf(array $classes)
     {
         return $this->customValidator(function () use ($classes) {
+            if (!count($classes)) return true;
+
             $value = $this->value();
+            $passedStatements = [];
 
             foreach ($classes as $class) {
-                if ($value instanceof $class) continue;
-
-                $errorMsg = "The {$this->propertyName} property must be an instance of: " . implode(' or ', $classes);
-
-                $this->customData->throwError(
-                    $this->errorMessage ?? $errorMsg,
-                    UnexpectedPropertyTypeException::class
-                );
+                $passedStatements[] = $value instanceof $class;
             }
 
-            return true;
+            if (in_array(true, $passedStatements, true)) return true;
+
+            $errorMsg = "The {$this->propertyName} property must be an instance of: " . implode(' or ', $classes);
+
+            $this->customData->throwError(
+                $this->errorMessage ?? $errorMsg,
+                UnexpectedPropertyTypeException::class
+            );
         });
     }
 
