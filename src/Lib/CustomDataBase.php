@@ -73,7 +73,7 @@ abstract class CustomDataBase
      * 
      * @return Wrapper | array
      */
-    public function wrapper(string $groupName = null)
+    public function wrapper(?string $groupName = null)
     {
         $wrapper = new Wrapper($this);
 

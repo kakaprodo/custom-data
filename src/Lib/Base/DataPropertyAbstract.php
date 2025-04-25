@@ -50,6 +50,11 @@ abstract class DataPropertyAbstract
     public $default = null;
 
     /**
+     * Properties to pass to a child custom-data class
+     */
+    public $childProps = [];
+
+    /**
      * The basic nature of a property
      */
     const PROPERTY_NATURE_REQUIRED = "required";
@@ -60,13 +65,15 @@ abstract class DataPropertyAbstract
      */
     const ACTION_GENERAL = 'GENERAL';
     const ACTION_WRAPPER = 'WRAPPER';
+    const ACTION_EXTRA = 'EXTRA';
 
     /**
      * the lifecycle of action execution
      */
     static $eventExecutionOrders = [
         self::ACTION_GENERAL,
-        self::ACTION_WRAPPER
+        self::ACTION_WRAPPER,
+        self::ACTION_EXTRA,
     ];
 
     /**
@@ -136,7 +143,7 @@ abstract class DataPropertyAbstract
      * Register an action task that will be executed before auditing 
      * a property
      */
-    protected function addBeforeAuditAction(callable $actionHandler, string $groupAction = null)
+    public function addBeforeAuditAction(callable $actionHandler, ?string $groupAction = null)
     {
         $this->beforeAuditActions[$groupAction ?? self::ACTION_GENERAL][] = $actionHandler;
 
@@ -147,7 +154,7 @@ abstract class DataPropertyAbstract
      * Register an action task that will be executed after auditing 
      * a property
      */
-    protected function addAfterAuditAction(callable $actionHandler, string $groupAction = null)
+    public function addAfterAuditAction(callable $actionHandler, ?string $groupAction = null)
     {
         $this->afterAuditActions[$groupAction ?? self::ACTION_GENERAL][] = $actionHandler;
 
@@ -212,6 +219,14 @@ abstract class DataPropertyAbstract
     public function getType()
     {
         return $this->selectedType;
+    }
+
+    /**
+     * Get the name of the property
+     */
+    public function getPropertyName()
+    {
+        return $this->propertyName;
     }
 
     /**
