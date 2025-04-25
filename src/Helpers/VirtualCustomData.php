@@ -27,7 +27,7 @@ class VirtualCustomData extends CustomData
     public static  function  check(
         callable $myValidationClosure,
         $data = [],
-        callable $errors = null
+        ?callable $errors = null
     ): CustomData {
         $virtual = new static($data);
 

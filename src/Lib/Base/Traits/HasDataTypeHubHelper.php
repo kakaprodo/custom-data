@@ -61,7 +61,7 @@ trait HasDataTypeHubHelper
 
         if (!CustomData::isCustomDataChild($type)) return $value;
 
-        return $type::make($value);
+        return $type::make(array_merge($this->childProps, $value));
     }
 
 
@@ -71,13 +71,13 @@ trait HasDataTypeHubHelper
     public function typeOfValueIs($type, $value, $customType = null)
     {
         $typeChecker = [
-            self::DATA_STRING => fn () => is_string($value) || is_numeric($value),
-            self::DATA_INT => fn () => is_integer($value),
-            self::DATA_FLOAT => fn () => is_float($value),
-            self::DATA_BOOL => fn () => is_bool($value) || in_array(intval($value), [0, 1], true),
-            self::DATA_ARRAY => fn () => is_array($value) && $this->arrayItemsAreCompatible($value, $customType),
-            self::DATA_OBJECT => fn () => is_object($value),
-            self::DATA_NUMERIC => fn () => is_numeric($value),
+            self::DATA_STRING => fn() => is_string($value) || is_numeric($value),
+            self::DATA_INT => fn() => is_integer($value),
+            self::DATA_FLOAT => fn() => is_float($value),
+            self::DATA_BOOL => fn() => is_bool($value) || in_array(intval($value), [0, 1], true),
+            self::DATA_ARRAY => fn() => is_array($value) && $this->arrayItemsAreCompatible($value, $customType),
+            self::DATA_OBJECT => fn() => is_object($value),
+            self::DATA_NUMERIC => fn() => is_numeric($value),
             self::DATA_CUSTOM => function () use ($value, $customType) {
 
                 if (CustomData::isCallable($customType)) {

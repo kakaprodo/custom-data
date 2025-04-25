@@ -2,6 +2,7 @@
 
 namespace Kakaprodo\CustomData\Lib\Property;
 
+use Closure;
 use Illuminate\Support\Str;
 use Kakaprodo\CustomData\CustomData;
 use Kakaprodo\CustomData\Lib\CustomDataBase;
@@ -24,7 +25,7 @@ class DataProperty extends DataTypeHub
     public function toCamelCase()
     {
         $this->addBeforeAuditAction(
-            fn () => $this->transform(fn () => Str::camel($this->propertyName))
+            fn() => $this->transform(fn() => Str::camel($this->propertyName))
         );
 
         return $this;
@@ -36,7 +37,7 @@ class DataProperty extends DataTypeHub
     public function toKebabCase()
     {
         $this->addBeforeAuditAction(
-            fn () => $this->transform(fn () => Str::kebab($this->propertyName))
+            fn() => $this->transform(fn() => Str::kebab($this->propertyName))
         );
 
         return $this;
@@ -48,7 +49,7 @@ class DataProperty extends DataTypeHub
     public function toSnakeCase()
     {
         $this->addBeforeAuditAction(
-            fn () => $this->transform(fn () => Str::snake($this->propertyName))
+            fn() => $this->transform(fn() => Str::snake($this->propertyName))
         );
 
         return $this;
@@ -60,7 +61,7 @@ class DataProperty extends DataTypeHub
     public function toPascalCase()
     {
         $this->addBeforeAuditAction(
-            fn () => $this->transform(function () {
+            fn() => $this->transform(function () {
                 $str = ucwords(preg_replace('/[^a-zA-Z0-9]+/', ' ', $this->propertyName));
 
                 return str_replace(' ', '', $str);
@@ -141,7 +142,7 @@ class DataProperty extends DataTypeHub
     public function castToModel(
         string $fullyClassName,
         string $column = 'id',
-        string $errorMessage = null
+        ?string $errorMessage = null
     ) {
         return $this->castTo(function () use ($fullyClassName, $column, $errorMessage) {
             if (!($value = $this->value())) return;
@@ -163,7 +164,7 @@ class DataProperty extends DataTypeHub
      */
     public function copy($copyName = null, $shouldReplaceProperty = false)
     {
-        $this->addAfterAuditAction(fn () => $this->copyPropertyValue($copyName, $shouldReplaceProperty));
+        $this->addAfterAuditAction(fn() => $this->copyPropertyValue($copyName, $shouldReplaceProperty));
 
         return $this;
     }
@@ -188,9 +189,33 @@ class DataProperty extends DataTypeHub
     public function wrap(string $groupName)
     {
         $this->addAfterAuditAction(
-            fn () => $this->customData->wrapper()->add($groupName, $this->propertyName),
+            fn() => $this->customData->wrapper()->add($groupName, $this->propertyName),
             self::ACTION_WRAPPER
         );
+
+        return $this;
+    }
+
+    /**
+     * Pass additional properties to a child custom-data
+     */
+    public function props($childProps)
+    {
+        $this->addBeforeAuditAction(
+            fn() => $this->childProps = CustomData::isCallable($childProps)
+                ? $childProps($this)
+                : $childProps
+        );
+
+        return $this;
+    }
+
+    /**
+     * Add an additional task to execute on the property 
+     */
+    public function addTask(Closure $myCallback)
+    {
+        $this->addAfterAuditAction(fn() => $myCallback($this));
 
         return $this;
     }
