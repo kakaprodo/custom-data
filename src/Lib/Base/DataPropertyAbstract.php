@@ -23,6 +23,11 @@ abstract class DataPropertyAbstract
     protected $selectedType = null;
 
     /**
+     * applicable on array child
+     */
+    public $childTypeShouldBe = null;
+
+    /**
      * keeps action to perform to property before the audit
      */
     protected $beforeAuditActions = [];
@@ -219,6 +224,14 @@ abstract class DataPropertyAbstract
     public function getType()
     {
         return $this->selectedType;
+    }
+
+    /**
+     * Get the child type of the property when it is an array
+     */
+    public function getChildType()
+    {
+        return $this->childTypeShouldBe;
     }
 
     /**

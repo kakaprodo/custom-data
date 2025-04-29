@@ -41,11 +41,6 @@ abstract class DataTypeHubAbstract extends DataPropertyAbstract
     protected $additionalType = null;
 
     /**
-     * applicable on array child
-     */
-    public $childTypeShouldBe = null;
-
-    /**
      * The validation error message of a given field
      */
     public $errorMessage = null;
