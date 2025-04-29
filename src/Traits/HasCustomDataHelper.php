@@ -175,7 +175,7 @@ trait HasCustomDataHelper
     /**
      * Extract form validation rules from expected data
      */
-    public static function formValidationRules(Request $request = null)
+    public static function formValidationRules(?Request $request = null)
     {
         $request = $request ?? request();
 
@@ -194,8 +194,18 @@ trait HasCustomDataHelper
 
             $extractedRules[$property] = $rules;
 
+            $nestedChild = $value->getType();
+            $typeIsFromDeepNested = false;
+
+            if (!self::isCustomDataChild($nestedChild)) {
+                $nestedChild = $value->getChildType();
+
+                if (!$nestedChild) continue;
+                $typeIsFromDeepNested = true;
+            }
+
             // Process simple nested rules
-            if (!self::isCustomDataChild($nestedChild = $value->getType())) continue;
+            if (!self::isCustomDataChild($nestedChild)) continue;
 
             $nestedRules = $nestedChild::formValidationRules($request);
 
@@ -204,7 +214,7 @@ trait HasCustomDataHelper
             foreach ($nestedRules as $nestedProperty => $rules) {
                 $rules = self::isCallable($rules) ? $rules($request) : $rules;
                 if (count($rules) == 0) continue 2;
-                $extractedRules["$property.$nestedProperty"] = $rules;
+                $extractedRules[$property . "." . ($typeIsFromDeepNested ? "*." : "") . $nestedProperty] = $rules;
             }
         }
 
