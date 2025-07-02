@@ -2,7 +2,6 @@
 
 namespace Kakaprodo\CustomData\Helpers;
 
-use Exception;
 use ReflectionMethod;
 use Kakaprodo\CustomData\CustomData;
 use Kakaprodo\CustomData\Exceptions\ActionWithNoArgumentException;
@@ -91,10 +90,15 @@ abstract class CustomActionBuilder
         $customData = $action->dataToInject($action, $data, $beforeDataBoot);
 
         if ($action->shouldQueue) {
-            return QueueCustomDataActionJob::dispatch($action, $customData, static::$handleMethod);
+            $processor = QueueCustomDataActionJob::dispatch($action, $customData, static::$handleMethod);
+        } else {
+            $processor = $action->{static::$handleMethod}($customData);
         }
 
-        return $action->{static::$handleMethod}($customData);
+        // bring it back to handle in case it was set to custom method
+        static::$handleMethod = 'handle';
+
+        return  $processor;
     }
 
     /**
@@ -120,7 +124,7 @@ abstract class CustomActionBuilder
     protected function dataToInject(
         CustomActionBuilder $action,
         $data,
-        callable $beforeDataBoot = null
+        ?callable $beforeDataBoot = null
     ) {
         if ($data instanceof CustomData) return $data;
 
