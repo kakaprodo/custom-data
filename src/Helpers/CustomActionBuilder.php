@@ -4,10 +4,11 @@ namespace Kakaprodo\CustomData\Helpers;
 
 use ReflectionMethod;
 use Kakaprodo\CustomData\CustomData;
+use Kakaprodo\CustomData\Jobs\QueueCustomDataActionJob;
+use Kakaprodo\CustomData\Jobs\QueueInBatchCustomDataActionJob;
 use Kakaprodo\CustomData\Exceptions\ActionWithNoArgumentException;
 use Kakaprodo\CustomData\Exceptions\ActionHandleMethodNotFoundException;
 use Kakaprodo\CustomData\Exceptions\ActionWithNonCustomDataArgumentException;
-use Kakaprodo\CustomData\Jobs\QueueCustomDataActionJob;
 
 abstract class CustomActionBuilder
 {
@@ -64,6 +65,18 @@ abstract class CustomActionBuilder
         static::$existingActionInstance->shouldQueue($queueName, $queuWhen);
 
         return new static;
+    }
+
+    /**
+     * Process the action class as a Batchable Job
+     * @param CustomData|array
+     */
+    public static function processInBatch($data)
+    {
+        return new QueueInBatchCustomDataActionJob(
+            static::class,
+            $data
+        );
     }
 
     /**

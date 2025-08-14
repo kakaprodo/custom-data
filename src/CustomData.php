@@ -47,9 +47,7 @@ abstract class CustomData extends CustomDataBase
     }
 
 
-    public function boot()
-    {
-    }
+    public function boot() {}
 
     public function __get($name)
     {
