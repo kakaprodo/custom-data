@@ -18,7 +18,7 @@ trait HasDataTypeHubHelper
      */
     public function arrayItemsAreCompatible($items, $childType = null)
     {
-        if (!$childType) return true;
+        if ($childType === null) return true;
 
         if ($childType == self::DATA_ARRAY) $this->customData->throwError(
             $this->errorMessage ?? "child type of {$this->propertyName} is not supported",
