@@ -4,6 +4,7 @@ namespace Kakaprodo\CustomData\Traits;
 
 use Exception;
 use ReflectionClass;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Kakaprodo\CustomData\CustomData;
@@ -256,9 +257,9 @@ trait HasCustomDataHelper
         if (count($transformProperties) == 0) return;
 
         foreach ($transformProperties as $currentName => $newName) {
-            $propertyValue = $this->data[$currentName] ?? null;
+            if (!Arr::exists($this->data, $currentName)) continue;
 
-            if (!$propertyValue) continue;
+            $propertyValue = $this->data[$currentName] ?? null;
 
             $this->data[$newName] =  $propertyValue;
             unset($this->data[$currentName]);
