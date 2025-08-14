@@ -2,6 +2,8 @@
 
 namespace Kakaprodo\CustomData\Lib;
 
+use Illuminate\Bus\Batch;
+use Kakaprodo\CustomData\Helpers\Wrapper;
 use Kakaprodo\CustomData\Helpers\Optional;
 use Kakaprodo\CustomData\Traits\HasDataHelper;
 use Kakaprodo\CustomData\Lib\TypeHub\DataTypeHub;
@@ -9,7 +11,6 @@ use Kakaprodo\CustomData\Lib\Property\DataProperty;
 use Kakaprodo\CustomData\Traits\HasCustomDataHelper;
 use Kakaprodo\CustomData\Traits\HasDataValidationHelper;
 use Kakaprodo\CustomData\Exceptions\MissedRequiredPropertyException;
-use Kakaprodo\CustomData\Helpers\Wrapper;
 
 abstract class CustomDataBase
 {
@@ -38,6 +39,12 @@ abstract class CustomDataBase
      * Use to group properties
      */
     public $customWrapper = [];
+
+    /**
+     * A batch in which the custom data is being executed in
+     * note: only available in batch queue 
+     */
+    public ?Batch $batch = null;
 
     /**
      * Required  class properties 

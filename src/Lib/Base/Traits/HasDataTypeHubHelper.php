@@ -57,13 +57,31 @@ trait HasDataTypeHubHelper
      */
     private function custValueToCustomData($value, $type)
     {
-        if (($value instanceof CustomData) || !is_array($value)) return $value;
+        if (($value instanceof CustomData) || !is_array($value)) return $this->prependProps($value);
 
-        if (!CustomData::isCustomDataChild($type)) return $value;
+        if (!CustomData::isCustomDataChild($type)) return $this->prependProps($value);
 
-        return $type::make(array_merge($this->childProps, $value));
+        return $type::make($this->prependProps($value));
     }
 
+    /**
+     * insert props at the begining of the provided data
+     * 
+     * @param CustomData|array $existingData
+     */
+    public function prependProps($existingData)
+    {
+        if (is_array($existingData)) return array_merge($this->childProps, $existingData);
+
+        if ($existingData instanceof CustomData) {
+            foreach ($this->childProps as $key => $value) {
+                $existingData->{$key} = $value;
+            }
+            return $existingData;
+        }
+
+        return $existingData;
+    }
 
     /**
      * check the type of a given value
